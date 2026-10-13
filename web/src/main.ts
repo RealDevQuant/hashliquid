@@ -435,7 +435,15 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
   // ---- the deploy wizard ----
   /** The native file control speaks the browser's language: this button speaks ours. */
   /** A leverage sets the size: that much of the collateral, as notional, in this market. */
-  async lev(n) { ui.form.size = sizeForLeverage(Number(n)) },
+  async lev(n) {
+    const m = current(), lev = Number(n)
+    const size = sizeForLeverage(lev)
+    if (m && m.price && collateral() > 0n && !(Number(size) > 0)) {
+      const minUsd = Number((m.perp.orderStepSize * m.price) / V.BASE_PRECISION) / 1e6
+      throw new Error(`${lev}x of your ${usd(collateral())} ${quoteName()} is ${usd(BigInt(Math.round(Number(collateral()) * lev)))}: below this market's smallest order, ${base(m.perp.orderStepSize)} ${m.coin} (about ${minUsd.toFixed(0)} ${quoteName()}). Deposit more, or trade a market with a smaller minimum.`)
+    }
+    ui.form.size = size
+  },
   async pickLogo() { document.querySelector<HTMLInputElement>('input[data-logo]')?.click() },
   async pick(arg) { const [choice, agent] = (arg ?? '').split(':'); ui.deploy.choice = choice as '' | 'hire' | 'custom'; if (agent) ui.deploy.agent = agent },
   async aggr(n) { ui.deploy.aggr = Number(n) as 1 | 2 | 3 },
@@ -937,7 +945,7 @@ function orderPanel(): string {
     <div class="side"><button data-action="side" data-arg="long" class="long ${long ? 'on' : ''}">Long</button><button data-action="side" data-arg="short" class="short ${long ? '' : 'on'}">Short</button></div>
     <div class="t-type"><button data-action="type" data-arg="market" class="${limitMode ? '' : 'on'}">Market</button><button data-action="type" data-arg="limit" class="${limitMode ? 'on' : ''}">Limit</button></div>
     <div class="row">${field('size', `Size (${esc(m?.coin ?? '')})`, 'inputmode="decimal"')}${limitMode ? field('limit', `Limit price (${quoteName()})`, 'inputmode="decimal"') : field('slippage', 'Slippage %', 'inputmode="decimal"')}</div>
-    ${leverageHtml()}
+    ${leverageHtml()}${errLine()}
     <label class="t-check"><input type="checkbox" data-action="reduceOnly" ${ui.form.reduceOnly ? 'checked' : ''} /> Reduce only</label>
     ${previewHtml()}
     <button data-action="order" class="${long ? 'long' : 'short'} wide" ${cant || held <= 0n ? 'disabled' : ''}>Sign with key #${b.nonce} &amp; ${long ? 'buy' : 'sell'} ${esc(m?.coin ?? '')}</button>
