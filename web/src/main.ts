@@ -67,6 +67,7 @@ const ui = {
   /** The deploy wizard's choices. */
   deploy: { choice: (knownAgent(QUERY.get('hire')) ? 'hire' : QUERY.get('create') ? 'custom' : '') as '' | 'hire' | 'custom', agent: knownAgent(QUERY.get('hire')) ? QUERY.get('hire')! : 'ash1', base: 1 as 1 | 2 | 3 | 4, aggr: 1 as 1 | 2 | 3, logo: null as File | null, done: '' },
   showSecret: false,
+  showWords: false,
   busy: '',
   log: [] as { kind: 'ok' | 'err'; text: string; at: number }[],
   form: { side: 'long', type: 'market', size: '1', slippage: '1', limit: '', reduceOnly: false as boolean, deposit: '100', withdraw: '', to: '', words: '', secret: '', agentName: '', ownerName: '', fund: '50' } as Record<string, string | boolean>,
@@ -342,6 +343,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
   async browserWallet() { ui.wallet = connectBrowserWallet(); localStorage.setItem(WALLET_KEY, 'browser') },
   async importWallet() { ui.wallet = importBrowserWallet(f('secret').trim()); ui.form.secret = ''; localStorage.setItem(WALLET_KEY, 'browser') },
   async showSecret() { ui.showSecret = !ui.showSecret },
+  async showWords() { ui.showWords = !ui.showWords },
   async disconnect() { ui.wallet = null; ui.showSecret = false; ui.drawer = false; localStorage.removeItem(WALLET_KEY) },
   async account() { ui.drawer = !ui.drawer },
   async closeDrawer() { ui.drawer = false },
@@ -579,7 +581,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
 }
 
 /** Actions that only change what is shown: no chain, no busy state. */
-const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'sizeMode', 'depositAsset', 'fundAsset', 'aggr', 'base', 'deployAgain'])
+const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'showWords', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'sizeMode', 'depositAsset', 'fundAsset', 'aggr', 'base', 'deployAgain'])
 async function run(name: string, arg?: string) {
   if (ui.busy) return
   if (QUIET.has(name)) {
@@ -1194,13 +1196,15 @@ function drawer(): string {
       </div>
     </section>
     <section><h2>Withdraw <span class="badge locked">key #${b.nonce}</span></h2>
-      <p class="dim small">The bunker holds ${usd(held)} ${quoteName()}. Withdrawing is signed with the next one-time key.</p>
+      <dl><div><dt>Bunker</dt><dd class="small" id="bunker-address">${keys().address.toBase58()}</dd></div><div><dt>Collateral</dt><dd>${usd(held)} ${quoteName()}</dd></div></dl>
+      <p class="dim small">Withdrawing is signed with the next one-time key.</p>
       <div class="row">${field('withdraw', `${quoteName()} (empty = all)`, 'inputmode="decimal"')}${field('to', 'To (empty = this wallet)', 'placeholder="owner address" autocomplete="off" spellcheck="false"')}</div>
       <p class="dim small burn-line">${burnLine()}</p>
       <div class="row"><button class="ghost" data-action="withdraw" ${held > 0n && !blocked() ? '' : 'disabled'}>Withdraw</button></div>
     </section>` : `<section><h2>Bunker</h2><p class="dim">Open the bunker first: Step 3 in the terminal. Deposits and withdrawals appear here after that.</p></section>`}
-    ${ui.master ? `<section><h2>24 words</h2><p class="dim small">Loaded in this tab. They sign here in the browser and are never sent anywhere.</p>
-      <div class="row"><button class="ghost sm" data-action="forgetWords">Forget them in this tab</button></div></section>` : ''}
+    ${ui.master ? `<section><h2>24 words</h2><p class="dim small">Loaded in this tab. They sign here in the browser and are never sent anywhere. Closing the tab forgets them: keep a copy.</p>
+      <div class="row"><button class="ghost sm" data-action="showWords">${ui.showWords ? 'Hide' : 'Show'} the 24 words</button><button class="ghost sm" data-action="forgetWords">Forget them in this tab</button></div>
+      ${ui.showWords ? `<ol class="words">${(sessionStorage.getItem(WORDS_KEY) ?? '').split(' ').map((w) => `<li>${esc(w)}</li>`).join('')}</ol>` : ''}</section>` : ''}
   </aside>`
 }
 
