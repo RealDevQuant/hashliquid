@@ -239,11 +239,37 @@ function orderFromForm(): H.V.OrderParams {
   }
   return V.perpOrder({ marketIndex: m.index, direction, baseAssetAmount: size, orderType: V.ORDER_TYPE.LIMIT, price: V.toTick(limit, m.perp), reduceOnly: !!ui.form.reduceOnly, postOnly: f('type') === 'limit' ? V.POST_ONLY.TRY_POST_ONLY : V.POST_ONLY.NONE })
 }
+/** The market's maximum leverage, from its initial margin ratio. */
+const maxLeverage = (m: MarketInfo | null): number => (m?.perp.marginRatioInitial ? Number(10_000n / BigInt(m.perp.marginRatioInitial)) : 20)
+/** The size that puts `lev` times the collateral into this market, as the size field shows it. */
+function sizeForLeverage(lev: number): string {
+  const m = current()
+  if (!m || !m.price || collateral() <= 0n) return ''
+  const raw = (collateral() * BigInt(Math.round(lev * 100)) * V.BASE_PRECISION) / (m.price * 100n)
+  return base(V.toStep(raw, m.perp))
+}
+/** The leverage the size typed means on this bunker's collateral (0 when there is none). */
+function leverageOfForm(): number {
+  const m = current()
+  if (!m || !m.price || collateral() <= 0n) return 0
+  let size = 0n
+  try { size = V.toStep(parseUnits(f('size') || '0', 9), m.perp) } catch { return 0 }
+  return Math.round((Number((size * m.price) / V.BASE_PRECISION) / Number(collateral())) * 10) / 10
+}
+function leverageHtml(): string {
+  const m = current(), max = maxLeverage(m), lev = leverageOfForm()
+  const steps = [1, 2, 5, 10, 20, max].filter((v, i, a) => v <= max && a.indexOf(v) === i)
+  return `<div class="t-lev"><div class="t-lev-head"><span>Leverage · up to ${max}x on this market</span><b class="t-lev-val">${lev > 0 ? lev.toFixed(1) + 'x' : '–'}</b></div>
+    <input type="range" data-lev min="1" max="${max}" step="0.5" value="${Math.min(Math.max(lev || 1, 1), max)}" aria-label="Leverage" />
+    <div class="t-lev-chips">${steps.map((v) => `<button type="button" class="chip ${Math.abs(lev - v) < 0.05 ? 'on' : ''}" data-action="lev" data-arg="${v}">${v}x</button>`).join('')}</div></div>`
+}
 const previewHtml = (): string => {
   try {
     const params = orderFromForm()
     const notional = (params.baseAssetAmount * (current()?.price ?? 0n)) / V.BASE_PRECISION
-    return `<dl class="t-preview"><div><dt>${f('side') === 'long' ? 'Buys' : 'Sells'} no worse than</dt><dd>${price(params.price)}</dd></div><div><dt>Notional</dt><dd>${usd(notional)}</dd></div></dl>`
+    const lev = collateral() > 0n ? Number(notional) / Number(collateral()) : 0
+    const max = maxLeverage(current())
+    return `<dl class="t-preview"><div><dt>${f('side') === 'long' ? 'Buys' : 'Sells'} no worse than</dt><dd>${price(params.price)}</dd></div><div><dt>Notional</dt><dd>${usd(notional)}</dd></div><div><dt>Leverage</dt><dd class="${lev > max ? 'neg' : ''}">${lev.toFixed(1)}x${lev > max ? ` · above ${max}x` : ''}</dd></div></dl>`
   } catch (e) { return `<p class="dim small t-preview">${esc(e instanceof Error ? e.message : String(e))}</p>` }
 }
 
@@ -353,6 +379,8 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
   },
   // ---- the deploy wizard ----
   /** The native file control speaks the browser's language: this button speaks ours. */
+  /** A leverage sets the size: that much of the collateral, as notional, in this market. */
+  async lev(n) { ui.form.size = sizeForLeverage(Number(n)) },
   async pickLogo() { document.querySelector<HTMLInputElement>('input[data-logo]')?.click() },
   async pick(arg) { const [choice, agent] = (arg ?? '').split(':'); ui.deploy.choice = choice as '' | 'hire' | 'custom'; if (agent) ui.deploy.agent = agent },
   async aggr(n) { ui.deploy.aggr = Number(n) as 1 | 2 | 3 },
@@ -447,7 +475,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
 }
 
 /** Actions that only change what is shown: no chain, no busy state. */
-const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'aggr', 'base', 'deployAgain'])
+const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'aggr', 'base', 'deployAgain'])
 async function run(name: string, arg?: string) {
   if (ui.busy) return
   if (QUIET.has(name)) {
@@ -846,6 +874,7 @@ function orderPanel(): string {
     <div class="side"><button data-action="side" data-arg="long" class="long ${long ? 'on' : ''}">Long</button><button data-action="side" data-arg="short" class="short ${long ? '' : 'on'}">Short</button></div>
     <div class="t-type"><button data-action="type" data-arg="market" class="${limitMode ? '' : 'on'}">Market</button><button data-action="type" data-arg="limit" class="${limitMode ? 'on' : ''}">Limit</button></div>
     <div class="row">${field('size', `Size (${esc(m?.coin ?? '')})`, 'inputmode="decimal"')}${limitMode ? field('limit', `Limit price (${quoteName()})`, 'inputmode="decimal"') : field('slippage', 'Slippage %', 'inputmode="decimal"')}</div>
+    ${leverageHtml()}
     <label class="t-check"><input type="checkbox" data-action="reduceOnly" ${ui.form.reduceOnly ? 'checked' : ''} /> Reduce only</label>
     ${previewHtml()}
     <button data-action="order" class="${long ? 'long' : 'short'} wide" ${cant || held <= 0n ? 'disabled' : ''}>Sign with key #${b.nonce} &amp; ${long ? 'buy' : 'sell'} ${esc(m?.coin ?? '')}</button>
@@ -1102,6 +1131,13 @@ document.addEventListener('click', (e) => {
 })
 document.addEventListener('input', (e) => {
   const el = e.target as HTMLInputElement
+  if (el.dataset?.lev !== undefined) {   // the slider fills the size; the page is not rebuilt under the thumb
+    ui.form.size = sizeForLeverage(Number(el.value))
+    const sz = document.querySelector<HTMLInputElement>('input[data-field="size"]'); if (sz) sz.value = ui.form.size
+    const v = document.querySelector('.t-lev-val'); if (v) v.textContent = `${Number(el.value).toFixed(1)}x`
+    const pv = document.querySelector('.t-preview'); if (pv) pv.outerHTML = previewHtml()
+    return
+  }
   if (!el.dataset?.field) return
   ui.form[el.dataset.field] = el.value
   if (el.dataset.field === 'prompt') { const n = document.querySelector('.dp-prompt .count'); if (n) n.textContent = `${el.value.length}/1500` }
@@ -1109,6 +1145,7 @@ document.addEventListener('input', (e) => {
   // the order preview follows the form without rebuilding the page under the cursor
   const pv = document.querySelector('.t-preview')
   if (pv) pv.outerHTML = previewHtml()
+  if (el.dataset.field === 'size') { const lev = leverageOfForm(); const r = document.querySelector<HTMLInputElement>('input[data-lev]'); if (r) r.value = String(Math.min(Math.max(lev || 1, 1), Number(r.max))); const v = document.querySelector('.t-lev-val'); if (v) v.textContent = lev > 0 ? `${lev.toFixed(1)}x` : '–' }
 })
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ui.drawer) { ui.drawer = false; render() } })
 document.addEventListener('change', (e) => { const el = e.target as HTMLInputElement; if (el?.dataset?.logo !== undefined) { ui.deploy.logo = el.files?.[0] ?? null; render() } })

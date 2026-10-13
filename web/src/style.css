@@ -739,3 +739,12 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 .t-order > *, .t-order dl, .t-order dl div { min-width: 0; max-width: 100%; }
 .t-order dd, .t-order p, .t-order b, .t-order .gate-err { overflow-wrap: anywhere; }
 #bunker-address { word-break: break-all; }
+
+/* leverage: a slider and quick picks that fill the size from the collateral */
+.t-lev { display: grid; gap: 8px; }
+.t-lev-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--muted); }
+.t-lev-val { color: var(--text); font-size: 15px; }
+.t-order input[type=range][data-lev] { width: 100%; padding: 0; border: 0; background: transparent; accent-color: var(--accent); height: 24px; }
+.t-lev-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+#app .t-lev-chips .chip { padding: 6px 10px; font-size: 13px; background: transparent; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 999px; }
+#app .t-lev-chips .chip.on { color: var(--text); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
