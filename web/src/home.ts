@@ -48,26 +48,59 @@ export function device(el: HTMLElement) {
   place()
 }
 
-/** The ledger: a key signs, burns, the next one steps up. */
-export function keys(list: HTMLElement) {
-  const moves = [['order', 'BTC-PERP long · 10x'], ['cancel', 'resting bid 108,500'], ['order', 'ETH-PERP short · 5x'], ['withdraw', '250 USDT to the wallet'], ['order', 'SOL-PERP long · 3x'], ['close', 'BTC-PERP long · +4.2%'], ['hire', 'Ash One on this bunker'], ['order', 'SOL-PERP short · 2x']]
-  let n = 1, i = 0
-  const row = (k: number, state: 'used' | 'now' | 'next', m?: string[]) => {
-    const li = document.createElement('div'); li.className = `z-key ${state}`
-    li.innerHTML = `<span class="n">#${k}</span><span class="what">${m ? `${m[0]}<small>${m[1]}</small>` : 'next<small>derived from the words</small>'}</span><span class="st">${state === 'used' ? 'burned' : state === 'now' ? 'signing' : 'ready'}</span>`
-    return li
+/** The bunker's drawing: the chain of keys by default, one cube lit after another; the list's rows switch the scene. */
+export function scenes(stage: HTMLElement, list: HTMLElement | null) {
+  const names = ['keys', 'hash', 'wallet', 'program']
+  let current = 'keys', timer = 0, lit = 2
+  const show = (name: string) => {
+    if (name === current && stage.dataset.scene) return
+    current = name; stage.dataset.scene = name
+    void import('./iso.ts').then((m) => { m.mount(stage, name); requestAnimationFrame(() => stage.classList.add('drawn')) })
   }
-  const seed = () => { list.innerHTML = ''; for (let k = 0; k < 5; k++) { const m = moves[(i + k) % moves.length]; list.appendChild(row(n + k, k < 2 ? 'used' : k === 2 ? 'now' : 'next', k <= 2 ? m : undefined)) } }
-  seed()
+  show('keys')
+  if (list) list.querySelectorAll<HTMLElement>('li').forEach((li, i) => { li.addEventListener('pointerenter', () => show(names[i] ?? 'keys')); li.addEventListener('focusin', () => show(names[i] ?? 'keys')) })
   if (still) return
-  const step = () => {
-    if (document.hidden) return
-    const rows = Array.from(list.children) as HTMLElement[]
-    rows[2]?.classList.replace('now', 'used'); rows[2]?.querySelector('.st')?.replaceChildren('burned')
-    const nxt = rows[3]; if (nxt) { nxt.classList.replace('next', 'now'); const m = moves[(i + 3) % moves.length]; nxt.querySelector('.what')!.innerHTML = `${m[0]}<small>${m[1]}</small>`; nxt.querySelector('.st')!.textContent = 'signing' }
-    const gone = rows[0]; if (gone) { gone.classList.add('leave'); setTimeout(() => gone.remove(), 600) }
-    const fresh = row(n + 5, 'next'); fresh.classList.add('enter'); list.appendChild(fresh)
-    n++; i++
+  timer = window.setInterval(() => {
+    if (document.hidden || current !== 'keys') return
+    const cubes = stage.querySelectorAll<SVGGElement>('.cube.k')
+    if (!cubes.length) return
+    lit = (lit + 1) % 6
+    cubes.forEach((c, i) => { c.classList.toggle('burned', i < lit); c.classList.toggle('now', i === lit); c.classList.toggle('ready', i > lit) })
+  }, 1800)
+  void timer
+}
+
+/** The tape under the hero: the agents' real moves from the public feed, one key burned per move. */
+export async function tape(el: HTMLElement) {
+  const { fetchFeed } = await import('./agents.ts')
+  const feed = await fetchFeed().catch(() => null)
+  if (!feed) { el.remove(); return }
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
+  const n = (x: number, d = 2) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
+  const items: string[] = []
+  const moves = feed.agents.flatMap((a) => (a.moves ?? []).filter((m) => m.kind !== 'hold' && !m.error).map((m) => ({ ...m, who: a.name }))).sort((a, b) => b.t - a.t).slice(0, 24)
+  for (const m of moves) {
+    const what = m.kind === 'open' ? `${m.side} ${m.size ? n(m.size, 3) + ' ' : ''}${m.market}${m.price ? ' · ' + n(m.price, m.price > 1000 ? 1 : 2) : ''}` : m.kind === 'close' ? `closed ${m.market}` : m.kind === 'cancel' ? `cancelled ${m.market}` : m.kind === 'limit' ? `bid ${m.market}${m.price ? ' · ' + n(m.price, m.price > 1000 ? 1 : 2) : ''}` : `${m.kind} ${m.market}`
+    items.push(`<span class="z-move"><b>${esc(m.who)}</b>${esc(what)}<i>key burned</i></span>`)
   }
-  setInterval(step, 2600)
+  if (!items.length) { el.remove(); return }
+  const row = items.join('')
+  el.innerHTML = `<div class="z-tape-in"><span class="z-tape-tag">Live moves</span><div class="z-tape-track"><div>${row}</div><div aria-hidden="true">${row}</div></div></div>`
+}
+
+/** The steps: one open at a time, a bar that fills and moves on; the drawing on the right follows. */
+export function accordion(root: HTMLElement) {
+  const items = Array.from(root.querySelectorAll<HTMLElement>('.z-step')), stage = root.querySelector<HTMLElement>('.z-step-stage')
+  const scenesFor = ['wallet', 'keys', 'program', 'trade']
+  let i = 0, timer = 0, paused = false
+  const open = (k: number) => {
+    i = k
+    items.forEach((it, j) => { it.classList.toggle('open', j === k); it.querySelector<HTMLElement>('.bar')?.style.setProperty('animation', 'none'); void it.offsetWidth; it.querySelector<HTMLElement>('.bar')?.style.removeProperty('animation') })
+    if (stage) void import('./iso.ts').then((m) => { m.mount(stage, scenesFor[k] ?? 'keys'); requestAnimationFrame(() => stage.classList.add('drawn')) })
+  }
+  items.forEach((it, k) => { it.addEventListener('click', () => { open(k); restart() }) })
+  const tick = () => { if (!paused && !document.hidden) open((i + 1) % items.length) }
+  const restart = () => { clearInterval(timer); if (!still) timer = window.setInterval(tick, 5200) }
+  root.addEventListener('pointerenter', () => { paused = true }); root.addEventListener('pointerleave', () => { paused = false })
+  open(0); restart()
 }

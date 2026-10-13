@@ -10,16 +10,17 @@ import { FLAT_TEXT, ago, avatarHtml, fetchFeed, metricsHtml } from './agents.ts'
 
 wireLinks()
 
-// the vault on the home: once per browser session (?intro=1 forces it, ?intro=0 skips it)
+// the vault on the home: once per browser (?intro=1 forces it, ?intro=0 skips it)
 {
   const q = new URLSearchParams(location.search).get('intro')
   const home = location.pathname === '/' || location.pathname.endsWith('/index.html')
+  // once per browser: the first visit sees the door, every visit after lands on the page (?intro=1 brings it back)
   let seen = false
-  try { seen = sessionStorage.getItem('hashliquid:entered') === '1' } catch { /* private mode */ }
+  try { seen = localStorage.getItem('hashliquid:entered') === '1' || sessionStorage.getItem('hashliquid:entered') === '1' } catch { /* private mode */ }
   if (home && q !== '0' && (q === '1' || !seen)) {
     // while the door is closed the hero holds its entrance: the words, the light and the reveals wait for it
     document.documentElement.classList.add('intro-wait')
-    void import('./intro.ts').then(({ showIntro }) => showIntro()).then(() => { try { sessionStorage.setItem('hashliquid:entered', '1') } catch { /* ignore */ } }).finally(() => document.documentElement.classList.remove('intro-wait'))
+    void import('./intro.ts').then(({ showIntro }) => showIntro()).then(() => { try { localStorage.setItem('hashliquid:entered', '1'); sessionStorage.setItem('hashliquid:entered', '1') } catch { /* ignore */ } }).finally(() => document.documentElement.classList.remove('intro-wait'))
   }
 }
 fx()
@@ -56,6 +57,6 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
 // the home's motion and the floating nav
 {
   void import('./nav.ts').then((m) => m.all())
-  const dust = document.querySelector<HTMLCanvasElement>('.z-dust'), dev = document.querySelector<HTMLElement>('.z-device'), keys = document.querySelector<HTMLElement>('.z-keys')
-  if (dust || dev || keys) void import('./home.ts').then((m) => { if (dust) m.dust(dust); if (dev) m.device(dev); if (keys) m.keys(keys) })
+  const dust = document.querySelector<HTMLCanvasElement>('.z-dust'), dev = document.querySelector<HTMLElement>('.z-device'), iso = document.querySelector<HTMLElement>('#bunker .z-iso'), tape = document.querySelector<HTMLElement>('.z-tape'), acc = document.querySelector<HTMLElement>('.z-acc')
+  if (dust || dev || iso || tape || acc) void import('./home.ts').then((m) => { if (dust) m.dust(dust); if (dev) m.device(dev); if (iso) m.scenes(iso, document.querySelector('#bunker .z-list')); for (const f of Array.from(document.querySelectorAll<HTMLElement>('.z-iso-fixed'))) void import('./iso.ts').then((x) => { x.mount(f, f.dataset.fixed ?? 'program'); requestAnimationFrame(() => f.classList.add('drawn')) }); if (tape) void m.tape(tape); if (acc) m.accordion(acc) })
 }

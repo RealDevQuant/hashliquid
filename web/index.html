@@ -70,6 +70,7 @@
         </div>
         <div class="z-hero-fade" aria-hidden="true"></div>
       </section>
+      <div class="z-tape" aria-label="The agents' latest moves"></div>
 
       <section class="z-manifesto" id="why">
         <div class="z-wrap">
@@ -93,7 +94,7 @@
             </ul>
             <div class="z-btns" data-reveal><a class="btn bracket" href="/app.html">Create a bunker</a><a class="btn bracket" href="/docs.html#keys">Keys and signatures</a></div>
           </div>
-          <div class="z-visual" data-reveal><div class="z-keys" aria-hidden="true"></div></div>
+          <div class="z-visual" data-reveal><div class="z-iso" aria-hidden="true"></div></div>
         </div>
       </section>
 
@@ -149,26 +150,36 @@
             <p class="z-addr" data-reveal><span>Program</span><code>6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2</code></p>
             <div class="z-btns" data-reveal><a class="btn bracket" href="/docs.html#program">Read about the program</a></div>
           </div>
-          <div class="z-visual" data-reveal>
-            <div class="z-seals">
-              <a class="z-seal" href="https://solscan.io/account/6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2" target="_blank" rel="noopener"><span class="ring"><svg><use href="#i-lock"/></svg></span><b>Immutable</b><small>No upgrade authority on mainnet</small><span class="st">On chain</span></a>
-              <a class="z-seal" href="https://verify.osec.io/status/6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2" target="_blank" rel="noopener"><span class="ring"><svg><use href="#i-shield"/></svg></span><b>Verified build</b><small>The binary matches the source</small><span class="st">Verified</span></a>
-              <a class="z-seal" href="https://github.com/RealDevQuant/hashliquid-program" target="_blank" rel="noopener"><span class="ring"><svg><use href="#i-code"/></svg></span><b>Open source</b><small>Program, SDK, agents and site</small><span class="st">Public</span></a>
-            </div>
-          </div>
+          <div class="z-visual" data-reveal><div class="z-iso z-iso-fixed" data-fixed="program" aria-hidden="true"></div></div>
         </div>
-      </section>
+        <div class="z-wrap" data-reveal>
+          <ol class="z-time" aria-label="Milestones">
+            <li><i></i><small>11 Oct</small><b>Program live on mainnet</b></li>
+            <li><i></i><small>12 Oct</small><b>Ash One, Two and Three trading</b></li>
+            <li><i></i><small>13 Oct</small><b>Upgrade authority burned</b></li>
+            <li><i></i><small>13 Oct</small><b>Build verified by OtterSec</b></li>
+            <li><i></i><small>13 Oct</small><b>Hire an agent, or deploy your own</b></li>
+          </ol>
+          <div class="z-links" style="margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 14px">
+            <a href="https://solscan.io/account/6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2" target="_blank" rel="noopener">Program on Solscan →</a>
+            <a href="https://verify.osec.io/status/6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2" target="_blank" rel="noopener">Verified build →</a>
+            <a href="https://github.com/RealDevQuant/hashliquid-program" target="_blank" rel="noopener">Source →</a>
+          </div>
+        </section>
 
       <section class="z-steps" id="how">
         <div class="z-wrap">
           <p class="eyebrow" data-reveal>How it works</p>
           <h2 data-reveal>Four steps. You trade, the words <em>keep the keys.</em></h2>
-          <ol>
-            <li data-reveal><span class="n">01</span><h3>Choose a wallet</h3><p>Phantom, or one made in the browser. It pays fees and sends collateral in. It has no power over the bunker.</p></li>
-            <li data-reveal><span class="n">02</span><h3>Write down 24 words</h3><p>They derive one-time keys. Each key signs once and names the next. Keep them: they are the bunker.</p></li>
-            <li data-reveal><span class="n">03</span><h3>Create and fund the bunker</h3><p>One transaction opens the bunker and its trading account. Deposit USDT, or SOL swapped on the way in.</p></li>
-            <li data-reveal><span class="n">04</span><h3>Trade, or let an agent trade</h3><p>Margin times leverage, up to 20x. Every order, cancel and withdrawal is one signed move. Hire Ash, or build your own.</p></li>
-          </ol>
+          <div class="z-acc z-grid" data-reveal>
+            <ol class="z-acc-list">
+              <li class="z-step"><span class="n">01</span><div><h3>Choose a wallet</h3><p>Phantom, or one made in the browser. It pays fees and sends collateral in. It has no power over the bunker.</p></div><i class="bar"></i></li>
+              <li class="z-step"><span class="n">02</span><div><h3>Write down 24 words</h3><p>They derive one-time keys. Each key signs once and names the next. Keep them: they are the bunker.</p></div><i class="bar"></i></li>
+              <li class="z-step"><span class="n">03</span><div><h3>Create and fund the bunker</h3><p>One transaction opens the bunker and its trading account. Deposit USDT, or SOL swapped on the way in.</p></div><i class="bar"></i></li>
+              <li class="z-step"><span class="n">04</span><div><h3>Trade, or let an agent trade</h3><p>Margin times leverage, up to 20x. Every order, cancel and withdrawal is one signed move. Hire Ash, or build your own.</p></div><i class="bar"></i></li>
+            </ol>
+            <div class="z-visual"><div class="z-iso z-step-stage" aria-hidden="true"></div></div>
+          </div>
         </div>
       </section>
 
