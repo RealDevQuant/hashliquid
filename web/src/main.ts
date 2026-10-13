@@ -15,7 +15,7 @@
 import './polyfill.ts'
 import '@fontsource-variable/space-grotesk'
 import './style.css'
-import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, type TransactionInstruction } from '@solana/web3.js'
+import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, type TransactionInstruction, VersionedTransaction } from '@solana/web3.js'
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import * as H from '@hashliquid/client'
 import { INTERVALS, MarketChart, fetchCandles, type Candle, type Indicators, type Interval } from './chart.ts'
@@ -160,6 +160,38 @@ async function refresh() {
  * while it waits. A transaction that didn't land before its blockhash expired is checked one last time on
  * chain before being reported as not landed.
  */
+const SOL_MINT = 'So11111111111111111111111111111111111111112'
+const SOL_RESERVE = 0.03   // SOL the wallet keeps for fees and rent when it swaps
+/** The oracle price of SOL in USDT, from the SOL market, or 0. */
+const solPrice = (): number => { const m = ui.chain.markets.find((x) => x.coin === 'SOL'); return m?.price ? Number(m.price) / 1e6 : 0 }
+/** SOL → USDT on the open market, signed by the connected wallet. Returns the USDT that arrived (quote units). */
+async function swapSolToUsdt(lamports: bigint): Promise<bigint> {
+  const wallet = ui.wallet!, mint = ui.chain.quote!.mint
+  ui.busy = 'Pricing the swap…'; render()
+  const q = await (await fetch(`https://lite-api.jup.ag/swap/v1/quote?inputMint=${SOL_MINT}&outputMint=${mint.toBase58()}&amount=${lamports}&slippageBps=50`)).json()
+  if (!q.outAmount) throw new Error('No swap route right now: try again in a moment, or deposit USDT.')
+  const r = await (await fetch('https://lite-api.jup.ag/swap/v1/swap', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ quoteResponse: q, userPublicKey: wallet.publicKey.toBase58(), wrapAndUnwrapSol: true, dynamicComputeUnitLimit: true, prioritizationFeeLamports: 'auto' }) })).json()
+  if (!r.swapTransaction) throw new Error('The swap could not be built: try again in a moment, or deposit USDT.')
+  const tx = VersionedTransaction.deserialize(Uint8Array.from(atob(r.swapTransaction), (ch) => ch.charCodeAt(0)))
+  ui.busy = `Swapping ${(Number(lamports) / 1e9).toFixed(4)} SOL for about ${usd(BigInt(q.outAmount))} ${quoteName()}…`; render()
+  const before = ui.chain.tokens
+  const signed = await wallet.signVersioned(tx)
+  const sig = await conn.sendRawTransaction(signed.serialize(), { skipPreflight: false, maxRetries: 2 })
+  for (let i = 0; i < 40; i++) {
+    const st = (await conn.getSignatureStatuses([sig])).value[0]
+    if (st?.err) throw new Error(`The swap failed on chain (${JSON.stringify(st.err)}). Nothing was deposited.`)
+    if (st && (st.confirmationStatus === 'confirmed' || st.confirmationStatus === 'finalized')) break
+    if (i === 39) throw new Error('The swap was not confirmed in time. Check the wallet before trying again.')
+    await sleep(1500)
+  }
+  await refresh()
+  const got = ui.chain.tokens - before
+  if (got <= 0n) throw new Error(`The swap confirmed (${sig.slice(0, 8)}…) but the ${quoteName()} is not visible yet: deposit it from the wallet in a moment.`)
+  return got
+}
+/** Two chips: deposit USDT as it is, or SOL that the wallet swaps first. */
+const assetChips = (name: string): string => { const v = f(name) || 'usdt'; return `<div class="t-asset">${[['usdt', quoteName()], ['sol', 'SOL · swapped to ' + quoteName()]].map(([k, l]) => `<button type="button" class="chip ${v === k ? 'on' : ''}" data-action="${name}" data-arg="${k}">${esc(l)}</button>`).join('')}</div>` }
+
 async function send(ixs: TransactionInstruction[], cu?: number): Promise<string> {
   const wallet = ui.wallet!
   const fee = NET === 'localnet' ? [] : [H.priorityFeeIx(Number(import.meta.env.VITE_PRIORITY_FEE ?? 5_000))]
@@ -229,6 +261,7 @@ function orderFromForm(): H.V.OrderParams {
   const m = current()
   if (!m || !m.price) throw new Error('No oracle price right now.')
   const direction = f('side') === 'long' ? V.DIRECTION.LONG : V.DIRECTION.SHORT
+  if (!f('size').trim()) throw new Error(collateral() > 0n ? 'Enter a size, or pick a leverage.' : 'Deposit collateral first, then enter a size or pick a leverage.')
   const size = V.toStep(parseUnits(f('size'), 9), m.perp)
   if (size <= 0n) throw new Error(`The smallest size on this market is ${base(m.perp.orderStepSize)}.`)
   let limit: bigint
@@ -257,11 +290,12 @@ function leverageOfForm(): number {
   return Math.round((Number((size * m.price) / V.BASE_PRECISION) / Number(collateral())) * 10) / 10
 }
 function leverageHtml(): string {
-  const m = current(), max = maxLeverage(m), lev = leverageOfForm()
+  const m = current(), max = maxLeverage(m), lev = leverageOfForm(), none = collateral() <= 0n
   const steps = [1, 2, 5, 10, 20, max].filter((v, i, a) => v <= max && a.indexOf(v) === i)
   return `<div class="t-lev"><div class="t-lev-head"><span>Leverage · up to ${max}x on this market</span><b class="t-lev-val">${lev > 0 ? lev.toFixed(1) + 'x' : '–'}</b></div>
-    <input type="range" data-lev min="1" max="${max}" step="0.5" value="${Math.min(Math.max(lev || 1, 1), max)}" aria-label="Leverage" />
-    <div class="t-lev-chips">${steps.map((v) => `<button type="button" class="chip ${Math.abs(lev - v) < 0.05 ? 'on' : ''}" data-action="lev" data-arg="${v}">${v}x</button>`).join('')}</div></div>`
+    <input type="range" data-lev min="1" max="${max}" step="0.5" value="${Math.min(Math.max(lev || 1, 1), max)}" aria-label="Leverage" ${none ? 'disabled' : ''} />
+    <div class="t-lev-chips">${steps.map((v) => `<button type="button" class="chip ${Math.abs(lev - v) < 0.05 ? 'on' : ''}" data-action="lev" data-arg="${v}" ${none ? 'disabled' : ''}>${v}x</button>`).join('')}</div>
+    ${none ? `<p class="dim small">The leverage sizes the order from the collateral in the bunker: deposit first (Deposit / Withdraw above).</p>` : ''}</div>`
 }
 const previewHtml = (): string => {
   try {
@@ -313,16 +347,30 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
   /** From the wallet to the bunker's token account, then into its trading account: one ordinary transaction. */
   async deposit() {
     const mint = ui.chain.quote!.mint, bunker = keys().address, wallet = ui.wallet!.publicKey
-    const amount = parseUnits(f('deposit'), ui.chain.quote!.decimals)
-    if (amount > ui.chain.tokens) throw new Error(`The wallet holds ${usd(ui.chain.tokens)} ${quoteName()}.`)
+    let amount: bigint, swapped = ''
+    if ((f('depositAsset') || 'usdt') === 'sol') {
+      const lamports = parseUnits(f('deposit'), 9)
+      const spendable = BigInt(Math.max(0, Math.round((ui.chain.sol - SOL_RESERVE) * 1e9)))
+      if (lamports <= 0n) throw new Error('How much SOL?')
+      if (lamports > spendable) throw new Error(`The wallet holds ${ui.chain.sol.toFixed(4)} SOL and keeps ${SOL_RESERVE} for fees: up to ${(Number(spendable) / 1e9).toFixed(4)} SOL can go in.`)
+      amount = await swapSolToUsdt(lamports)
+      swapped = `Swapped ${(Number(lamports) / 1e9).toFixed(4)} SOL for ${usd(amount)} ${quoteName()} and d`
+    } else {
+      amount = parseUnits(f('deposit'), ui.chain.quote!.decimals)
+      if (amount > ui.chain.tokens) throw new Error(`The wallet holds ${usd(ui.chain.tokens)} ${quoteName()}.`)
+    }
+    ui.busy = `Depositing ${usd(amount)} ${quoteName()}…`; render()
     const to = H.bunkerTokenAccount(bunker, mint)
     await send([
       createAssociatedTokenAccountIdempotentInstruction(wallet, to, bunker, mint),
       createTransferInstruction(getAssociatedTokenAddressSync(mint, wallet), to, wallet, amount),
       H.depositIx({ bunker, marketIndex: QUOTE, amount, mint, remaining: await quoteAccounts() }),
     ], H.CU.SETUP)
-    return `Deposited ${usd(amount)} ${quoteName()}.`
+    ui.form.deposit = ''
+    return swapped ? `${swapped}eposited it.` : `Deposited ${usd(amount)} ${quoteName()}.`
   },
+  async depositAsset(a) { ui.form.depositAsset = a ?? 'usdt' },
+  async fundAsset(a) { ui.form.fundAsset = a ?? 'usdt' },
 
   /** Signed: out of the exchange, to the wallet's token account or to the owner typed in. */
   async withdraw() {
@@ -399,10 +447,17 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     const nameBytes = H.encodeAgentName(cfg)
     const delegate = new PublicKey(d.choice === 'hire' ? DELEGATES[d.agent] : CUSTOM_DELEGATE)
     const k = keys(), wallet = ui.wallet!.publicKey
-    const amount = f('fund').trim() ? parseUnits(f('fund'), ui.chain.quote!.decimals) : 0n
-    const have = BigInt(Math.round(Number(collateral()) + Number(amount)))
+    const fundSol = (f('fundAsset') || 'usdt') === 'sol'
+    const solIn = fundSol && f('fund').trim() ? parseUnits(f('fund'), 9) : 0n
+    let amount = !fundSol && f('fund').trim() ? parseUnits(f('fund'), ui.chain.quote!.decimals) : 0n
+    const estimate = fundSol ? BigInt(Math.round((Number(solIn) / 1e9) * solPrice() * 1e6)) : amount
+    const have = BigInt(Math.round(Number(collateral()) + Number(estimate)))
     if (have < BigInt(MIN_HIRE_USDT) * 10n ** BigInt(ui.chain.quote!.decimals)) throw new Error(`An agent needs at least ${MIN_HIRE_USDT} ${quoteName()} in the bunker: deposit more.`)
-    if (amount > ui.chain.tokens) throw new Error(`The wallet holds ${usd(ui.chain.tokens)} ${quoteName()}.`)
+    if (!fundSol && amount > ui.chain.tokens) throw new Error(`The wallet holds ${usd(ui.chain.tokens)} ${quoteName()}.`)
+    if (fundSol) {
+      const needed = SOL_RESERVE + (ui.chain.bunker && ui.chain.user ? 0 : OPEN_SOL)
+      if (Number(solIn) / 1e9 > ui.chain.sol - needed) throw new Error(`The wallet holds ${ui.chain.sol.toFixed(4)} SOL and needs ${needed} for the bunker's rent and fees: up to ${Math.max(0, ui.chain.sol - needed).toFixed(4)} SOL can go in.`)
+    }
     // 1. the bunker and its trading account, named after the agent (free when new, one signed move when it exists)
     if (!ui.chain.bunker || !ui.chain.user) {
       ui.busy = 'Opening the bunker…'; render()
@@ -426,7 +481,8 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
       const r = await fetch(`/api/logo?bunker=${k.address.toBase58()}`, { method: 'POST', body: d.logo }).catch(() => null)
       if (!r?.ok) logoNote = ` The logo was not saved${r ? `: ${(await r.json().catch(() => ({}))).error ?? r.status}` : ''}.`
     }
-    // 2. collateral
+    // 2. collateral: SOL is swapped for USDT by the wallet first
+    if (fundSol && solIn > 0n) amount = await swapSolToUsdt(solIn)
     if (amount > 0n) {
       ui.busy = `Depositing ${usd(amount)} ${quoteName()}…`; render()
       const mint = ui.chain.quote!.mint, to = H.bunkerTokenAccount(k.address, mint)
@@ -475,7 +531,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
 }
 
 /** Actions that only change what is shown: no chain, no busy state. */
-const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'aggr', 'base', 'deployAgain'])
+const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'depositAsset', 'fundAsset', 'aggr', 'base', 'deployAgain'])
 async function run(name: string, arg?: string) {
   if (ui.busy) return
   if (QUIET.has(name)) {
@@ -1036,10 +1092,11 @@ function deployView(): string {
          <h3 class="dp-h">Pick a trading strategy</h3><div class="dp-grid4">${strategyCards}</div>${d.base === 4 ? promptBox : ''}`}
     <h3 class="dp-h">How hard it trades</h3><div class="dp-grid3">${levelCards}</div>`
   // 4 fund + go
-  const enough = Number(f('fund') || 0) + Number(collateral()) / 1e6 >= MIN_HIRE_USDT
+  const fundSol = (f('fundAsset') || 'usdt') === 'sol'
+  const enough = Number(f('fund') || 0) * (fundSol ? solPrice() : 1) + Number(collateral()) / 1e6 >= MIN_HIRE_USDT
   const lvl = LEVELS[d.aggr - 1]
   const summary = choice === 'hire' ? `${AGENT_META[d.agent].name}${f('ownerName').trim() ? ` for ${f('ownerName').trim()}` : ''}` : `${f('agentName').trim() || 'Your agent'} · ${STRATEGIES[d.base - 1][1]}`
-  const s4 = `<div class="dp-fund"><div class="row">${field('fund', `Deposit ${quoteName()} from the wallet (the bunker holds ${usd(collateral())})`, 'inputmode="decimal"')}</div>
+  const s4 = `<div class="dp-fund"><div>${assetChips('fundAsset')}<div class="row">${field('fund', fundSol ? `Deposit SOL from the wallet (swapped to ${quoteName()} first; the bunker holds ${usd(collateral())})` : `Deposit ${quoteName()} from the wallet (the bunker holds ${usd(collateral())})`, 'inputmode="decimal"')}</div></div>
       <aside class="dp-summary"><b>${esc(summary)}</b><span>${lvl[1]} · ${lvl[2]} · ${lvl[3]} · ${lvl[4].toLowerCase()}</span><span class="dim small">At least ${MIN_HIRE_USDT} ${quoteName()} in the bunker. The agent can trade it and never withdraw it; your words take it out whenever you want.</span></aside></div>
     <button class="wide lg" data-action="deployGo" ${!enough || ui.busy ? 'disabled' : ''}>${choice === 'custom' ? 'Create the agent' : `Hire ${esc(AGENT_META[d.agent].name)}`}</button>
     ${ui.log.length ? `<p class="${ui.log[0].kind === 'err' ? 'gate-err' : 'dim'} small">${esc(ui.log[0].text)}</p>` : ''}`
@@ -1080,7 +1137,8 @@ function drawer(): string {
         <div><dt>Address</dt><dd class="small" id="bunker-address">${keys().address.toBase58()}</dd></div>
         <div><dt>Collateral</dt><dd>${usd(held)} ${quoteName()}</dd></div>
       </dl>
-      <div class="row">${field('deposit', `Deposit ${quoteName()} from the wallet`, 'inputmode="decimal"')}<button data-action="deposit">Deposit</button></div>
+      ${assetChips('depositAsset')}
+      <div class="row">${field('deposit', (f('depositAsset') || 'usdt') === 'sol' ? `Deposit SOL from the wallet (swapped to ${quoteName()} first, two signatures)` : `Deposit ${quoteName()} from the wallet`, 'inputmode="decimal"')}<button data-action="deposit">Deposit</button></div>
       <div class="row">${field('withdraw', `Withdraw ${quoteName()} (empty = all)`, 'inputmode="decimal"')}${field('to', 'To (empty = this wallet)', 'placeholder="owner address" autocomplete="off" spellcheck="false"')}</div>
       <p class="dim small burn-line">${burnLine()}</p>
       <div class="row"><button class="ghost" data-action="withdraw" ${held > 0n && !blocked() ? '' : 'disabled'}>Sign with key #${b.nonce} &amp; withdraw</button></div>

@@ -748,3 +748,8 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 .t-lev-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 #app .t-lev-chips .chip { padding: 6px 10px; font-size: 13px; background: transparent; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 999px; }
 #app .t-lev-chips .chip.on { color: var(--text); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* deposit in USDT, or in SOL swapped first */
+.t-asset { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+#app .t-asset .chip { padding: 6px 10px; font-size: 13px; background: transparent; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 999px; }
+#app .t-asset .chip.on { color: var(--text); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
