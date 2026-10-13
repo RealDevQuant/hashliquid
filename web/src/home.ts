@@ -18,9 +18,9 @@ export function dust(canvas: HTMLCanvasElement) {
     for (const p of ps) {
       p.x += p.vx; p.y += p.vy; p.t += 0.01
       if (p.y < -4 || p.x < -4 || p.x > w + 4) Object.assign(p, seed(), { y: h + 4 })
-      const light = Math.max(0, 1 - Math.hypot(p.x - w * 0.34, p.y) / (h * 0.9))
+      const light = Math.max(0, 1 - Math.hypot(p.x - w * 0.5, p.y - h * 0.2) / (h * 0.9))
       ctx.globalAlpha = p.a * (0.35 + 0.65 * light) * (0.6 + 0.4 * Math.sin(p.t))
-      ctx.fillStyle = '#e8e0ff'
+      ctx.fillStyle = '#cfbcff'
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill()
     }
     raf = requestAnimationFrame(frame)
