@@ -1,0 +1,572 @@
+{
+  "address": "6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2",
+  "metadata": {
+    "name": "hashliquid",
+    "version": "0.2.0",
+    "spec": "0.1.0",
+    "description": "HashLiquid: a hash-locked wallet for trading perps on Solana"
+  },
+  "instructions": [
+    {
+      "name": "authorize",
+      "docs": [
+        "Verifies a Winternitz signature by the bunker's current key over",
+        "(program, bunker, key number, action hash, next key hash, salt), retires",
+        "that key and records the action as pending. Anyone may submit it: the",
+        "signature is the authority, the fee payer is irrelevant. A second",
+        "authorize replaces an unexecuted action (that is how one cancels)."
+      ],
+      "discriminator": [
+        173,
+        193,
+        102,
+        210,
+        219,
+        137,
+        113,
+        120
+      ],
+      "accounts": [
+        {
+          "name": "bunker",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "sig",
+          "type": "bytes"
+        },
+        {
+          "name": "action_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "next_key_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "salt",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "deposit",
+      "docs": [
+        "Moves tokens the bunker holds into its own trading account. Anyone can",
+        "send it: the tokens can only come from a token account the bunker owns",
+        "(the venue checks that) and only go to the bunker's own account (checked",
+        "here). The venue's remaining accounts (oracle, spot market, …) follow."
+      ],
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "bunker"
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "spot_market_vault",
+          "writable": true
+        },
+        {
+          "name": "bunker_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "venue_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "sub_account_id",
+          "type": "u16"
+        },
+        {
+          "name": "market_index",
+          "type": "u16"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "execute",
+      "docs": [
+        "Sends the pending action: `data` and the remaining accounts, with",
+        "`flags` (one byte per account, as signed), are the venue instruction",
+        "the bunker's key authorized, and must hash to it. The bunker signs it,",
+        "and only the bunker: no other signer is ever lent to the venue.",
+        "Permissionless, and it runs once: the pending action is cleared first."
+      ],
+      "discriminator": [
+        130,
+        221,
+        242,
+        154,
+        13,
+        193,
+        189,
+        29
+      ],
+      "accounts": [
+        {
+          "name": "bunker",
+          "writable": true
+        },
+        {
+          "name": "venue_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "name": "flags",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "init_trading",
+      "docs": [
+        "Creates the bunker's trading account on the venue (and, the first time,",
+        "its stats account), with the bunker as authority. Anyone can pay for it:",
+        "it only creates accounts the bunker owns, with no referrer. Only",
+        "sub-account 0 exists: one bunker, one trading account."
+      ],
+      "discriminator": [
+        34,
+        148,
+        2,
+        48,
+        123,
+        127,
+        51,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "bunker"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "user_stats",
+          "writable": true
+        },
+        {
+          "name": "venue_program"
+        },
+        {
+          "name": "rent"
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "sub_account_id",
+          "type": "u16"
+        },
+        {
+          "name": "name",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "open",
+      "docs": [
+        "Opens a bunker at PDA([\"bunker\", id]) with id = H(seed ‖ key_hash).",
+        "Permissionless: whoever pays, the keys are the ones the address commits",
+        "to. Opening an open bunker changes nothing and succeeds."
+      ],
+      "discriminator": [
+        228,
+        220,
+        155,
+        71,
+        199,
+        189,
+        60,
+        45
+      ],
+      "accounts": [
+        {
+          "name": "bunker",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "seed",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "key_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Bunker",
+      "discriminator": [
+        31,
+        34,
+        148,
+        232,
+        191,
+        161,
+        213,
+        226
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "Authorized",
+      "discriminator": [
+        118,
+        46,
+        103,
+        253,
+        101,
+        118,
+        6,
+        128
+      ]
+    },
+    {
+      "name": "BunkerOpened",
+      "discriminator": [
+        232,
+        10,
+        115,
+        189,
+        157,
+        118,
+        203,
+        85
+      ]
+    },
+    {
+      "name": "Executed",
+      "discriminator": [
+        8,
+        232,
+        139,
+        132,
+        197,
+        45,
+        29,
+        164
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "BadId",
+      "msg": "The id is not the hash of the seed and key"
+    },
+    {
+      "code": 6001,
+      "name": "BadNextKey",
+      "msg": "The next key hash must be new and not zero"
+    },
+    {
+      "code": 6002,
+      "name": "BadSignature",
+      "msg": "The signature does not match the bunker's current key"
+    },
+    {
+      "code": 6003,
+      "name": "NothingPending",
+      "msg": "Nothing is pending"
+    },
+    {
+      "code": 6004,
+      "name": "WrongAction",
+      "msg": "This is not the action the bunker's key signed"
+    },
+    {
+      "code": 6005,
+      "name": "MissingPrivilege",
+      "msg": "An account is missing a privilege the signed action needs"
+    },
+    {
+      "code": 6006,
+      "name": "WrongProgram",
+      "msg": "Not the venue program"
+    },
+    {
+      "code": 6007,
+      "name": "WrongSubAccount",
+      "msg": "Only sub-account 0 exists"
+    },
+    {
+      "code": 6008,
+      "name": "TooCostly",
+      "msg": "The signature would cost too much to verify: use another salt"
+    },
+    {
+      "code": 6009,
+      "name": "NotThisBunkersAccount",
+      "msg": "Not this bunker's trading account"
+    },
+    {
+      "code": 6010,
+      "name": "MathOverflow",
+      "msg": "Math overflow"
+    }
+  ],
+  "types": [
+    {
+      "name": "Authorized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bunker",
+            "type": "pubkey"
+          },
+          {
+            "name": "nonce",
+            "docs": [
+              "Number of the key that signed."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "action_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "next_key_hash",
+            "docs": [
+              "Hash of the key that must sign next."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Bunker",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "docs": [
+              "H(seed ‖ first key hash): what the address is derived from."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "seed",
+            "docs": [
+              "Public seed of every key of this bunker."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "key_hash",
+            "docs": [
+              "Hash of the one-time public key that must sign next."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "docs": [
+              "Number of that key. Grows by one with every signature."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "pending",
+            "docs": [
+              "Hash of the action the last signature authorized. Zero when there is none."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pending_nonce",
+            "docs": [
+              "Number of the key that authorized it."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "opened_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BunkerOpened",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bunker",
+            "type": "pubkey"
+          },
+          {
+            "name": "key_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Executed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bunker",
+            "type": "pubkey"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "action_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

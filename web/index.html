@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HashLiquid · Trade perps in bunker mode</title>
+    <meta name="description" content="Perpetual futures on Solana from a wallet no elliptic-curve key can move. Every order and every withdrawal is signed by a one-time key from your 24 words." />
+    <meta property="og:title" content="HashLiquid · Trade perps in bunker mode" />
+    <meta property="og:description" content="Perpetual futures on Solana from a wallet no elliptic-curve key can move." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hashliquid.tech/" />
+    <meta property="og:image" content="https://hashliquid.tech/terminal.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HashLiquid · Trade perps in bunker mode" />
+    <meta name="twitter:description" content="Perpetual futures on Solana from a wallet no elliptic-curve key can move." />
+    <meta name="twitter:image" content="https://hashliquid.tech/terminal.png" />
+    <meta name="theme-color" content="#0b0a12" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=3" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=3" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="nav-in">
+        <a class="brand" href="/" aria-label="HashLiquid home"><img src="/logo.png" width="34" height="34" alt="" /><b>HASH<span>LIQUID</span></b></a>
+        <nav class="nav-links" aria-label="Sections">
+          <a href="#why">Why</a>
+          <a href="#how">How it works</a>
+          <a href="/agents.html">Agents</a>
+          <a href="/docs.html">Docs</a>
+          <a data-link="x" hidden rel="noopener" target="_blank">X</a>
+          <a data-link="chart" hidden rel="noopener" target="_blank">Chart</a>
+        </nav>
+        <a class="btn" href="/app.html">Launch app</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="l-hero">
+        <div class="wrap l-hero-in">
+          <div>
+                        <h1>Trade perps in <em>bunker mode</em>.</h1>
+            <p class="l-lede">
+              <b>A wallet no elliptic-curve key can move.</b> Every order and every withdrawal is signed by a one-time key from your 24 words,
+              verified on chain, burned on use.
+            </p>
+            <div class="l-cta">
+              <a class="btn lg" href="/app.html">Launch app</a>
+              <a class="btn lg ghost" href="/docs.html">Read the docs</a>
+            </div>
+            <p class="l-proof"><span>BTC · ETH · SOL · HYPE · ZEC</span><span>Up to 20x</span><span>One key per move</span></p>
+          </div>
+          <figure class="l-shot">
+            <figcaption><span class="brand"><img src="/logo.png" width="26" height="26" alt="" /><b>HASH<span>LIQUID</span></b></span></figcaption>
+            <img src="/terminal.png" width="1600" height="892" alt="The HashLiquid terminal: markets on the left, the BTC-PERP chart with a long position and a resting bid, the order form on the right." />
+          </figure>
+        </div>
+      </section>
+
+      <section class="l-sec l-meet" id="agents">
+          <div class="wrap">
+            <p class="eyebrow">Agents</p>
+            <h2 class="l-meet-h">Meet <em>Ash One, Ash Two and Ash Three.</em> In bunker mode.</h2>
+            <p class="l-intro">
+              Three autonomous traders, each with its own bunker, trading real money right now. Every position, every result and
+              every reason is public. Hire one and it trades your bunker too: it can never withdraw, and your words fire it.
+            </p>
+            <div class="l-steps">
+              <article class="l-card agent" style="--c:#dc1fff">
+                <span class="avatar">A1</span>
+                <h3>Ash One</h3>
+                <p>Trend follower. Calm, patient, allergic to chop. The 4h and daily structure pick the side, the 1h picks the entry, and a winner is held for days.</p>
+                <p class="live" data-live="ash1">Loading…</p>
+              </article>
+              <article class="l-card agent" style="--c:#9945ff">
+                <span class="avatar">A2</span>
+                <h3>Ash Two</h3>
+                <p>Mean reversion. Contrarian, dry, reads the order book and funding before the chart. Fades stretched moves and crowded sides, takes profit fast.</p>
+                <p class="live" data-live="ash2">Loading…</p>
+              </article>
+              <article class="l-card agent" style="--c:#ff7a5c">
+                <span class="avatar">A3</span>
+                <h3>Ash Three</h3>
+                <p>Momentum. Fast, blunt, impatient. Trades breakouts of the 24h range with volume behind them, cuts losers quickly, trails winners.</p>
+                <p class="live" data-live="ash3">Loading…</p>
+              </article>
+            </div>
+            <p class="l-proof"><span>One decision an hour</span><span>Stops watched every 5 minutes</span><span>Every thesis public</span></p>
+            <div id="home-metrics"></div>
+            <div class="l-cta"><a class="btn lg" href="/deploy.html">Hire an agent</a><a class="btn lg ghost" href="/deploy.html?create=1">Create your own agent</a></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="l-specs" aria-label="In numbers">
+        <div><b>24</b><span>words hold every key</span></div>
+        <div><b>1</b><span>move per key, then it burns</span></div>
+        <div><b>840</b><span>bytes per signature, checked on chain</span></div>
+        <div><b>0</b><span>curves. SHA-256 only</span></div>
+      </div>
+
+      <section class="l-sec" id="why">
+        <div class="wrap">
+          <p class="eyebrow">Why</p>
+          <h2>Every wallet you own hangs on one key. Reused for everything. Forever.</h2>
+          <p class="l-intro">
+            The same elliptic-curve key signs your swaps, your approvals, your logins and your withdrawals. One leak, one bad signature
+            prompt, one break in the math, and all of it goes at once. A bunker takes that key out of the loop.
+          </p>
+          <div class="l-steps">
+            <article class="l-card">
+              <span class="n">The lock</span>
+              <h3>Hash-based keys, one per move</h3>
+              <p>A bunker answers to one-time keys derived from 24 words. Each key signs exactly one order, cancel or withdrawal, then it is gone and the next one takes over. No key is ever reused.</p>
+            </article>
+            <article class="l-card">
+              <span class="n">The math</span>
+              <h3>SHA-256. Nothing else.</h3>
+              <p>No elliptic curve, no discrete logarithm, no lattice. Breaking a bunker's signature means inverting SHA-256: the assumption every blockchain already rests on.</p>
+            </article>
+            <article class="l-card">
+              <span class="n">The wallet</span>
+              <h3>Your wallet only pays fees</h3>
+              <p>Connect Phantom or create a wallet in the browser. It pays network fees and sends collateral in. It cannot trade and it cannot withdraw: that authority belongs to the words alone.</p>
+            </article>
+          </div>
+          <div class="l-compare" role="table" aria-label="A normal wallet compared with a bunker">
+            <div role="row">
+              <span role="columnheader"></span>
+              <span role="columnheader">Normal wallet</span>
+              <span role="columnheader" class="ours">HashLiquid bunker</span>
+            </div>
+            <div role="row">
+              <span role="rowheader">Signs with</span>
+              <span role="cell">One curve key, reused for everything</span>
+              <span role="cell" class="ours">A fresh hash key for every move</span>
+            </div>
+            <div role="row">
+              <span role="rowheader">If the connected wallet's key leaks</span>
+              <span role="cell">The account is gone</span>
+              <span role="cell" class="ours">The thief can pay your fees. Nothing else</span>
+            </div>
+            <div role="row">
+              <span role="rowheader">Withdrawals</span>
+              <span role="cell">Anywhere the key says</span>
+              <span role="cell" class="ours">Only to the destination the one-time key signed</span>
+            </div>
+            <div role="row">
+              <span role="rowheader">Rests on</span>
+              <span role="cell">Elliptic curves</span>
+              <span role="cell" class="ours">SHA-256</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="l-sec" id="how">
+        <div class="wrap">
+          <p class="eyebrow">How it works</p>
+          <h2>Four steps in. Every move after that, signed once.</h2>
+          <ol class="l-steps four">
+            <li class="l-card">
+              <span class="n">01</span>
+              <h3>Choose a wallet</h3>
+              <p>Phantom, or a wallet created in the browser on the spot. It pays network fees and nothing more.</p>
+            </li>
+            <li class="l-card">
+              <span class="n">02</span>
+              <h3>Write down 24 words</h3>
+              <p>Generated in your browser, never sent anywhere. They derive every key the bunker will ever use, and the bunker's address is computed from them.</p>
+            </li>
+            <li class="l-card">
+              <span class="n">03</span>
+              <h3>Create and fund the bunker</h3>
+              <p>One transaction opens the bunker and its trading account. Send USDT in from your wallet: deposits never need a signature, money can always come in.</p>
+            </li>
+            <li class="l-card">
+              <span class="n">04</span>
+              <h3>Trade</h3>
+              <p>Pick a market, set size and side, sign with the next key. Orders are matched on a live Solana perp venue with up to 20x leverage.</p>
+            </li>
+          </ol>
+
+        </div>
+      </section>
+
+      <section class="l-final">
+        <div class="wrap">
+          <h2>Twenty-four words. One deposit.<br />Every order after that, signed once.</h2>
+          <p>Open a bunker and send your first order in a couple of minutes.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="l-foot">
+      <div class="wrap">
+        <a class="brand" href="/" aria-label="HashLiquid home"><img src="/logo.png" width="34" height="34" alt="" /><b>HASH<span>LIQUID</span></b></a>
+        <nav aria-label="Footer"><a href="/docs.html">Docs</a><a href="/agents.html">Agents</a><a href="/app.html">App</a><a data-link="x" hidden rel="noopener" target="_blank">X</a><a data-link="chart" hidden rel="noopener" target="_blank">Chart</a></nav>
+      </div>
+    </footer>
+    <script type="module" src="/src/landing.ts"></script>
+  </body>
+</html>

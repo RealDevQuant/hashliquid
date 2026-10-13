@@ -1,0 +1,14 @@
+{
+  "name": "hashliquid",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "anchor build && npm --prefix client run idl",
+    "test:program": "cargo test -p hashliquid --lib",
+    "test:client": "npm --prefix client test",
+    "localnet": "scripts/localnet.sh",
+    "test:e2e": "npm --prefix client run test:e2e",
+    "fund": "npm --prefix client run fund --",
+    "web": "npm --prefix web run dev"
+  }
+}

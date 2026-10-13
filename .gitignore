@@ -1,0 +1,30 @@
+# secrets and local state: never in the repo
+.secrets/
+.localnet/
+.tools/
+client/agents/data/
+web/.vercel/
+*.tmp
+.DS_Store
+
+# builds and dependencies
+node_modules/
+target/
+dist/
+.anchor/
+test-ledger/
+**/*.rs.bk
+
+# the venue's source (read-only copy of their repo), the first version of this project (a DEX of our own, shelved) and its old history
+upstream/
+archive/
+.git-perp-dex-fork/
+
+# the on-chain program lives in its own repo with the verifiable build: github.com/RealDevQuant/hashliquid-program
+programs/
+Anchor.toml
+Cargo.toml
+Cargo.lock
+
+# brand sources: not needed public
+web/brand/

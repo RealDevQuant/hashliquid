@@ -1,0 +1,19 @@
+
+/* ---- chart v3: toolbar, legend, indicator toggles, the agents' bubbles ---- */
+.t-chart-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 10px; }
+.t-chart-bar .group { display: flex; gap: 2px; align-items: center; }
+.t-chart-bar .sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 6px; }
+.t-chart-bar .ind { font-size: 12px; letter-spacing: 0.04em; }
+.t-chart-bar .ind i { display: inline-block; width: 10px; height: 2px; margin-right: 6px; vertical-align: middle; background: var(--c); border-radius: 1px; }
+.t-chart-bar .ind.off { opacity: 0.45; }
+#chart-slot { position: relative; }
+.chart-legend { position: absolute; z-index: 3; top: 8px; left: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; font-size: 12px; color: var(--muted); pointer-events: none; font-variant-numeric: tabular-nums; }
+.chart-legend b { color: var(--text); font-weight: 600; font-size: 13px; }
+.chart-legend span i { font-style: normal; color: var(--faint); margin-right: 3px; }
+.chart-bubbles { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.bubble { position: absolute; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 22%, var(--bg)); border: 2px solid var(--c); color: var(--c); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; box-shadow: 0 6px 18px rgba(0,0,0,0.55), 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); pointer-events: auto; cursor: pointer; transition: transform 0.12s; }
+.bubble:hover { transform: scale(1.18); z-index: 6; }
+.bubble::after { content: ''; position: absolute; right: -4px; bottom: -4px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--bg); background: var(--side); }
+.bubble.long { --side: var(--long); } .bubble.short { --side: var(--short); }
+.bubble.close { background: var(--bg); border-style: dashed; }
+.chart-tip { pointer-events: none; }

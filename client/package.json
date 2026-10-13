@@ -1,0 +1,33 @@
+{
+  "name": "hashliquid-client",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "idl": "cp ../target/idl/hashliquid.json src/idl/hashliquid.json",
+    "test": "node --test test/wots.test.ts test/idl.test.ts",
+    "test:e2e": "node --test --test-concurrency=1 test/local.e2e.ts",
+    "test:ui": "node --test test/ui.e2e.ts",
+    "typecheck": "tsc --noEmit",
+    "fund": "node scripts/fund-local.ts",
+    "canary": "node scripts/canary-mainnet.ts",
+    "agents:setup": "node agents/setup.ts",
+    "agents": "node agents/run.ts",
+    "agents:once": "node agents/run.ts --once",
+    "agents:dry": "node agents/run.ts --dry",
+    "test:hire": "node --test agents/hire.e2e.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "@noble/hashes": "1.8.0",
+    "@scure/bip39": "1.6.0",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.99.0",
+    "@vercel/blob": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.3"
+  }
+}

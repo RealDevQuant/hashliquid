@@ -1,0 +1,7 @@
+node_modules
+dist
+screens
+.env
+.env.*
+.vercel
+.env*
