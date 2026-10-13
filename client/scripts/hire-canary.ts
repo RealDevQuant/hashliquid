@@ -26,6 +26,9 @@ const funder = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(readFileSync(WAL
 const USDT = BigInt(Math.round(Number(process.env.USDT ?? '21') * 1e6))
 const WAIT = Number(process.env.WAIT ?? '90')
 const SERVICE_WAIT = Number(process.env.SERVICE_WAIT ?? '420')
+/** PROMPT=<text>: the custom phase runs a prompt-driven agent (base 4) instead of a base-2 one; the text is saved through the site's API. */
+const PROMPT = process.env.PROMPT?.trim() ?? ''
+const SITE = process.env.SITE ?? 'https://hashliquid.tech'
 const QUOTE = V.QUOTE_SPOT_MARKET
 const MARKET = 'SOL-PERP'
 const usd = (v: bigint) => (Number(v) / 1e6).toFixed(2)
@@ -141,13 +144,26 @@ async function main() {
   }
 
   // 5. the bunker's own agent on the custom key
-  const customCfg = { kind: 'custom' as const, base: 2 as const, aggr: 1 as const, label: 'Canary bot' }
-  if (!same(H.decodeAgentName((await account())!.name), customCfg)) await act(V.updateUserNameIx({ authority: bunker, name: H.encodeAgentName(customCfg) }), 'name: HL1 C21 Canary bot')
+  const customCfg = PROMPT ? { kind: 'custom' as const, base: 4 as const, aggr: 1 as const, label: 'Prompt bot' } : { kind: 'custom' as const, base: 2 as const, aggr: 1 as const, label: 'Canary bot' }
+  if (!same(H.decodeAgentName((await account())!.name), customCfg)) await act(V.updateUserNameIx({ authority: bunker, name: H.encodeAgentName(customCfg) }), `name: HL1 C${customCfg.base}1 ${customCfg.label}`)
+  if (PROMPT) {
+    // the owner's prompt goes through the site's function, which checks the account's name on chain (the RPC it reads can lag a few seconds)
+    let saved = false
+    for (let i = 0; i < 12 && !saved; i++) {
+      const r = await fetch(`${SITE}/api/prompt?bunker=${bunker.toBase58()}`, { method: 'POST', headers: { 'content-type': 'text/plain; charset=utf-8' }, body: PROMPT })
+      const body = await r.text()
+      if (r.ok || r.status === 409) { saved = true; log(`prompt ${r.status === 409 ? 'already saved' : 'saved'}: ${body.slice(0, 120)}`) }
+      else if (r.status === 403) await sleep(5000)
+      else throw new Error(`prompt upload failed: ${r.status} ${body.slice(0, 160)}`)
+    }
+    if (!saved) throw new Error('the site never accepted the prompt (the account name is on chain: check the function)')
+  }
   if (!(await account())!.delegate.equals(customKey)) await act(V.updateUserDelegateIx({ authority: bunker, delegate: customKey }), 'switch the custom agent on')
   let customs = await customAgents(0), mine = customs.find((x) => x.bunker.equals(bunker))
   for (let i = 0; i < 10 && !mine; i++) { await sleep(3000); customs = await customAgents(0); mine = customs.find((x) => x.bunker.equals(bunker)) }
-  if (!mine || mine.cfg?.label !== 'Canary bot') throw new Error('the listing did not find the custom canary')
+  if (!mine || mine.cfg?.label !== customCfg.label) throw new Error('the listing did not find the custom canary')
   log(`listed as a custom agent: ${JSON.stringify(mine.cfg)} (${customs.length} in all)`)
+  if (PROMPT) { const def = customBook(mine, PROMPT).def; log(`as the service sees it · strategy: ${def.strategy} · persona starts: ${def.persona.slice(0, 160).replace(/\n/g, ' ')}`) }
   // 6. the live service gets its turn on it (its own listing, its own decision on the smaller model)
   const logFile = new URL('../agents/data/agents.log', import.meta.url)
   const seen = () => (existsSync(logFile) ? readFileSync(logFile, 'utf8').split('\n').filter((l) => l.includes(`custom@${bunker.toBase58()}`)) : [])
@@ -156,7 +172,7 @@ async function main() {
   for (let t = 0; t < SERVICE_WAIT; t += 15) { if (seen().length > before) break; await sleep(15_000) }
   const lines = seen().slice(before)
   if (lines.length) for (const l of lines) log(`service: ${l.slice(0, 200)}`); else log('the live service did not get to it in time (its listing is cached for 5 minutes): going on')
-  if (!posIn(await account(), 0)) await roundTrip(customBook(mine), 'full')
+  if (!posIn(await account(), 0)) await roundTrip(customBook(mine, PROMPT || null), 'full')
   else log('the service opened a position itself: leaving it to the guard and skipping the forced trade')
   // 7. fire and withdraw
   await act(V.updateUserDelegateIx({ authority: bunker, delegate: PublicKey.default }), 'switch the custom agent off')
