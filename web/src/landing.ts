@@ -9,7 +9,6 @@ import { all as fx } from './fx.ts'
 import { FLAT_TEXT, ago, avatarHtml, fetchFeed, metricsHtml } from './agents.ts'
 
 wireLinks()
-fx()
 
 // the vault on the home: once per browser session (?intro=1 forces it, ?intro=0 skips it)
 {
@@ -18,9 +17,12 @@ fx()
   let seen = false
   try { seen = sessionStorage.getItem('hashliquid:entered') === '1' } catch { /* private mode */ }
   if (home && q !== '0' && (q === '1' || !seen)) {
-    void import('./intro.ts').then(({ showIntro }) => showIntro()).then(() => { try { sessionStorage.setItem('hashliquid:entered', '1') } catch { /* ignore */ } })
+    // while the door is closed the hero holds its entrance: the words, the light and the reveals wait for it
+    document.documentElement.classList.add('intro-wait')
+    void import('./intro.ts').then(({ showIntro }) => showIntro()).then(() => { try { sessionStorage.setItem('hashliquid:entered', '1') } catch { /* ignore */ } }).finally(() => document.documentElement.classList.remove('intro-wait'))
   }
 }
+fx()
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 const n = (x: number, d = 2) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })

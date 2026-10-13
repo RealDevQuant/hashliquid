@@ -970,7 +970,7 @@ input, textarea { text-transform: none; }
 .btn:active, #app button:active:not(:disabled) { transform: translate(var(--px, 0), var(--py, 0)) scale(0.97); transition-duration: 0.08s; }
 .ripple { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: rgba(255, 255, 255, 0.55); pointer-events: none; animation: ripple 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; }
 @keyframes ripple { to { transform: scale(40); opacity: 0; } }
-.btn.bracket { overflow: visible; }
+.btn.bracket, .dp-opt, .dp-tab { overflow: visible; }
 .btn.bracket:hover { color: var(--accent); }
 .nav-links a { position: relative; }
 .nav-links a::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 5px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }

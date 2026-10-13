@@ -100,7 +100,8 @@ export function countUp(root: ParentNode = document) {
 /** Everything, once the page is there. New content (the wizard re-renders) is covered by the CSS selectors alone. */
 export function all() {
   spotlight(); buttons(); sections()
-  const h1 = document.querySelector<HTMLElement>('.z-hero h1'); if (h1) words(h1)
+  const h1 = document.querySelector<HTMLElement>('.z-hero h1')
+  if (h1) { const go = () => { if (document.documentElement.classList.contains('intro-wait')) setTimeout(go, 150); else words(h1) }; go() }
   const metrics = document.getElementById('home-metrics')
   if (metrics) new MutationObserver(() => countUp(metrics)).observe(metrics, { childList: true })
   countUp()
