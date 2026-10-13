@@ -414,6 +414,12 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     const m = current()!
     const params = orderFromForm()
     if (collateral() <= 0n) throw new Error('Deposit collateral first.')
+    // the venue refuses an order past the market's leverage; said here, before a key is spent on it
+    if (!params.reduceOnly && m.price) {
+      const notional = (params.baseAssetAmount * m.price) / V.BASE_PRECISION
+      const max = BigInt(maxLeverage(m))
+      if (notional > collateral() * max) throw new Error(`${usd(notional)} ${quoteName()} of ${m.coin} is more than ${max}x of your ${usd(collateral())} ${quoteName()}: the most this collateral allows is about ${usd(collateral() * max)} ${quoteName()}.`)
+    }
     const nonce = await act(V.placePerpOrderIx({ authority: keys().address, params, remaining: await perpAccounts(m.index) }), 'order')
     return `${f('side') === 'long' ? 'Buy' : 'Sell'} ${base(params.baseAssetAmount)} ${m.name} at ${f('type') === 'limit' ? price(params.price) : 'market (no worse than ' + price(params.price) + ')'}, signed with key #${nonce}.`
   },
