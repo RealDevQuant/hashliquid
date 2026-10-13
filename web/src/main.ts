@@ -362,10 +362,13 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     return 'Test funds received: 5 SOL and 10,000 USDT.'
   },
 
-  async newWords() { ui.fresh = H.newWords() },
-  async confirmWords() { ui.master = H.wordsToMaster(ui.fresh!); sessionStorage.setItem(WORDS_KEY, ui.fresh!); ui.fresh = null },
-  async importWords() { ui.master = H.wordsToMaster(f('words')); sessionStorage.setItem(WORDS_KEY, H.normalize(f('words'))); ui.form.words = '' },
-  async forgetWords() { ui.master = null; sessionStorage.removeItem(WORDS_KEY) },
+  async newWords() { ui.fresh = H.newWords(); if (ui.form.remember === undefined) ui.form.remember = 'yes' },
+  async rememberWords() { ui.form.remember = ui.form.remember === 'no' ? 'yes' : 'no' },
+  async copyWords() { const w = ui.fresh ?? sessionStorage.getItem(WORDS_KEY) ?? ''; await navigator.clipboard.writeText(w); ui.log.unshift({ kind: 'ok', text: 'The 24 words are in the clipboard.', at: Date.now() }) },
+  async downloadWords() { const w = ui.fresh ?? sessionStorage.getItem(WORDS_KEY) ?? ''; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([`HashLiquid bunker, 24 words. Whoever has these words has the bunker.\n\n${w}\n`], { type: 'text/plain' })); a.download = 'hashliquid-bunker-words.txt'; a.click(); URL.revokeObjectURL(a.href) },
+  async confirmWords() { ui.master = H.wordsToMaster(ui.fresh!); sessionStorage.setItem(WORDS_KEY, ui.fresh!); if (ui.form.remember !== 'no') localStorage.setItem(WORDS_KEY, ui.fresh!); ui.fresh = null },
+  async importWords() { ui.master = H.wordsToMaster(f('words')); sessionStorage.setItem(WORDS_KEY, H.normalize(f('words'))); if (ui.form.remember !== 'no') localStorage.setItem(WORDS_KEY, H.normalize(f('words'))); ui.form.words = '' },
+  async forgetWords() { ui.master = null; sessionStorage.removeItem(WORDS_KEY); localStorage.removeItem(WORDS_KEY) },
 
   /** The bunker and its trading account on the exchange, in one transaction. */
   async createBunker() {
@@ -581,7 +584,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
 }
 
 /** Actions that only change what is shown: no chain, no busy state. */
-const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'showWords', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'sizeMode', 'depositAsset', 'fundAsset', 'aggr', 'base', 'deployAgain'])
+const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'showWords', 'rememberWords', 'copyWords', 'downloadWords', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'sizeMode', 'depositAsset', 'fundAsset', 'aggr', 'base', 'deployAgain'])
 async function run(name: string, arg?: string) {
   if (ui.busy) return
   if (QUIET.has(name)) {
@@ -948,7 +951,8 @@ function orderPanel(): string {
       return `<section class="t-order"><h2>Your 24 words</h2>
         <ol class="words">${ui.fresh.split(' ').map((w) => `<li>${w}</li>`).join('')}</ol>
         <p class="note">Write them down now. They are the bunker: every order and every withdrawal is signed with a key derived from them, and nothing else can move what is inside.</p>
-        <div class="row"><button data-action="confirmWords">I wrote them down</button></div></section>`
+        <div class="row"><button class="ghost sm" data-action="copyWords">Copy</button><button class="ghost sm" data-action="downloadWords">Download as a file</button></div><label class="t-check"><input type="checkbox" data-action="rememberWords" ${ui.form.remember !== 'no' ? 'checked' : ''} /> Keep them in this browser, so closing the tab does not lose them (anyone with this browser can then use the bunker)</label>
+        <div class="row"><button data-action="confirmWords">I saved them</button></div></section>`
     }
     return `<section class="t-order"><h2>Step 2 · 24 words</h2>
       <p class="dim">A bunker has no private key. Its 24 words derive one-time keys: each signs once and names the next.</p>
@@ -1110,7 +1114,7 @@ function deployView(): string {
   const s2 = ui.master
     ? `<p class="dp-line dim">Loaded in this tab · bunker ${short(keys().address)}${ui.chain.user ? ' · account open' : ''}</p>`
     : ui.fresh
-      ? `<ol class="words">${ui.fresh.split(' ').map((w) => `<li>${w}</li>`).join('')}</ol><p class="note">Write them down now. They are the bunker.</p><div class="row"><button data-action="confirmWords">I wrote them down</button></div>`
+      ? `<ol class="words">${ui.fresh.split(' ').map((w) => `<li>${w}</li>`).join('')}</ol><p class="note">Write them down now. They are the bunker.</p><div class="row"><button class="ghost sm" data-action="copyWords">Copy</button><button class="ghost sm" data-action="downloadWords">Download as a file</button></div><label class="t-check"><input type="checkbox" data-action="rememberWords" ${ui.form.remember !== 'no' ? 'checked' : ''} /> Keep them in this browser, so closing the tab does not lose them (anyone with this browser can then use the bunker)</label><div class="row"><button data-action="confirmWords">I saved them</button></div>`
       : `<p class="dim">A bunker has no private key. Its 24 words derive one-time keys: each signs once.</p><div class="row"><button data-action="newWords">Generate 24 words</button></div><div class="row">${field('words', 'Or the words of a bunker you already have', 'placeholder="word1 word2 …" autocomplete="off" spellcheck="false"')}<button class="ghost" data-action="importWords">Use these words</button></div>`
   // 3 choose: who, or what, trades the bunker
   const STRATEGIES: [1 | 2 | 3 | 4, string, string][] = [
@@ -1246,7 +1250,7 @@ function render() {
 document.addEventListener('click', (e) => {
   const el = (e.target as HTMLElement).closest<HTMLElement>('[data-action]')
   if (!el || (el as HTMLButtonElement).disabled) return
-  if (el instanceof HTMLInputElement && el.type === 'checkbox') { ui.form[el.dataset.action!] = el.checked; render(); return }
+  if (el instanceof HTMLInputElement && el.type === 'checkbox' && el.dataset.action !== 'rememberWords') { ui.form[el.dataset.action!] = el.checked; render(); return }
   void run(el.dataset.action!, el.dataset.arg)
 })
 document.addEventListener('input', (e) => {
@@ -1271,7 +1275,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ui.drawe
 document.addEventListener('change', (e) => { const el = e.target as HTMLInputElement; if (el?.dataset?.logo !== undefined) { ui.deploy.logo = el.files?.[0] ?? null; render() } })
 
 async function start() {
-  const saved = sessionStorage.getItem(WORDS_KEY)
+  const saved = sessionStorage.getItem(WORDS_KEY) ?? localStorage.getItem(WORDS_KEY)   // the tab's, or the device's when the person chose to keep them
   if (saved && H.validWords(saved)) ui.master = H.wordsToMaster(saved)
   // the wallet used last time comes back on reload (Phantom only if it already trusts this site)
   const last = localStorage.getItem(WALLET_KEY)
