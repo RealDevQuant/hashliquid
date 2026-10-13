@@ -197,7 +197,9 @@ async function send(ixs: TransactionInstruction[], cu?: number): Promise<string>
   const fee = NET === 'localnet' ? [] : [H.priorityFeeIx(Number(import.meta.env.VITE_PRIORITY_FEE ?? 5_000))]
   const tx = new Transaction().add(...(cu ? [H.cuIx(cu)] : []), ...fee, ...ixs)
   tx.feePayer = wallet.publicKey
-  const latest = await conn.getLatestBlockhash('confirmed')
+  // a finalized blockhash: every node, the wallet's included, already knows it (a fresh one from this RPC can be
+  // ahead of the wallet's node, and its simulation then fails with "blockhash not found")
+  const latest = await conn.getLatestBlockhash('finalized')
   tx.recentBlockhash = latest.blockhash
   // a dry run first: a transaction that would fail is explained here, before the wallet is asked to sign it
   // simulated with the node's own latest blockhash: the public RPC's nodes don't all know ours yet
