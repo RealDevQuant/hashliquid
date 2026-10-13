@@ -668,8 +668,8 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 .dp-spec { list-style: none; display: grid; gap: 4px; color: var(--muted); font-size: 14px; }
 .dp-spec li::before { content: '· '; color: var(--accent); }
 .dp-step .dp-identity { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; margin-top: 4px; }
-.dp-file { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
-.dp-file input { font-size: 14px; padding: 12px 0; }
+.dp-file { display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+.dp-file .row { margin-top: 0; align-items: center; }
 .dp-step .dp-fund { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .dp-step .dp-fund .row { margin-top: 0; }
 .dp-summary { display: grid; gap: 6px; padding: 16px 18px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 15px; }
@@ -733,3 +733,9 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 /* long addresses in the docs wrap instead of pushing the page sideways */
 .docs a.mono, .docs code, .docs .mono { overflow-wrap: anywhere; }
 @media (max-width: 520px) { .l-foot .foot-mark { font-size: 10.5vw; } }
+
+/* the side panel never grows past its column: long addresses wrap inside it */
+.t-order { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.t-order > *, .t-order dl, .t-order dl div { min-width: 0; max-width: 100%; }
+.t-order dd, .t-order p, .t-order b, .t-order .gate-err { overflow-wrap: anywhere; }
+#bunker-address { word-break: break-all; }

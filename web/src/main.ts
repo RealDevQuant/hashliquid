@@ -340,6 +340,8 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     return `${AGENT_META[id!].name} hired with key #${nonce}. It joins its next trade.`
   },
   // ---- the deploy wizard ----
+  /** The native file control speaks the browser's language: this button speaks ours. */
+  async pickLogo() { document.querySelector<HTMLInputElement>('input[data-logo]')?.click() },
   async pick(arg) { const [choice, agent] = (arg ?? '').split(':'); ui.deploy.choice = choice as '' | 'hire' | 'custom'; if (agent) ui.deploy.agent = agent },
   async aggr(n) { ui.deploy.aggr = Number(n) as 1 | 2 | 3 },
   async base(n) { ui.deploy.base = Number(n) as 1 | 2 | 3 | 4 },
@@ -433,7 +435,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
 }
 
 /** Actions that only change what is shown: no chain, no busy state. */
-const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'aggr', 'base', 'deployAgain'])
+const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'aggr', 'base', 'deployAgain'])
 async function run(name: string, arg?: string) {
   if (ui.busy) return
   if (QUIET.has(name)) {
@@ -991,7 +993,7 @@ function deployView(): string {
   const s3 = `${tabs}
     ${choice === 'hire'
       ? `<h3 class="dp-h">Who trades for you</h3><div class="dp-grid3">${agentCards}</div><div class="row">${field('ownerName', 'Your name on the chart (optional)', 'maxlength="24" placeholder="Bob"')}</div>`
-      : `<div class="dp-identity">${field('agentName', 'Name, as it appears on the chart', 'maxlength="24" placeholder="Bob\'s bot"')}<label class="dp-file">Logo (png, jpg or webp, up to 300 KB)<input type="file" data-logo accept="image/png,image/jpeg,image/webp" />${d.logo ? `<span class="dim small">${esc(d.logo.name)}</span>` : ''}</label></div>
+      : `<div class="dp-identity">${field('agentName', 'Name, as it appears on the chart', 'maxlength="24" placeholder="Bob\'s bot"')}<div class="dp-file"><span>Logo (png, jpg or webp, up to 300 KB)</span><div class="row"><button type="button" class="ghost sm" data-action="pickLogo">Choose a file</button><span class="dim small">${d.logo ? esc(d.logo.name) : 'No file chosen'}</span></div><input type="file" data-logo hidden accept="image/png,image/jpeg,image/webp" /></div></div>
          <h3 class="dp-h">Pick a trading strategy</h3><div class="dp-grid4">${strategyCards}</div>${d.base === 4 ? promptBox : ''}`}
     <h3 class="dp-h">How hard it trades</h3><div class="dp-grid3">${levelCards}</div>`
   // 4 fund + go
