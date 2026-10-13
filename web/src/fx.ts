@@ -8,7 +8,7 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches
 const wired = new Set<string>()   // each listener goes on the document once, however often a page re-renders
 
 /** Cards and rows that light up where the pointer is: the glow follows --mx/--my, the CSS draws it. */
-export const SPOT = '.z-key, .z-agent, .z-seal, .z-steps li, .z-list li, .ag-card, .dp-opt, .dp-tab, .dp-card, .acct-card, .l-card, .gate-card, .z-badge, .hire-row, .ag-open, .chat-line, .agent-line'
+export const SPOT = '.z-key, .z-agent, .z-seal, .z-steps li, .z-list li, .ag-card, .dp-opt, .dp-tab, .dp-card, .acct-card, .l-card, .gate-card, .z-badge, .hire-row, .ag-open, .chat-line, .agent-line, .v-card, .v-facts div, .v-links a'
 export function spotlight() {
   if (still || wired.has('spot')) return
   wired.add('spot')
@@ -49,7 +49,7 @@ export function buttons() {
 
 /** Each section lights its top edge as it arrives; the words of a title come into focus one after the other. */
 export function sections(root: ParentNode = document) {
-  const secs = Array.from(root.querySelectorAll<HTMLElement>('.z-manifesto, .z-prod, .z-steps, .z-end, .docs section, .ag-sec'))
+  const secs = Array.from(root.querySelectorAll<HTMLElement>('.z-manifesto, .z-prod, .z-steps, .z-end, .v-hall, .v-end, .docs section, .ag-sec'))
   if (!secs.length || still) return
   const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { e.target.classList.add('lit'); io.unobserve(e.target) } }, { threshold: 0.12 })
   secs.forEach((s) => io.observe(s))
@@ -100,7 +100,7 @@ export function countUp(root: ParentNode = document) {
 /** Everything, once the page is there. New content (the wizard re-renders) is covered by the CSS selectors alone. */
 export function all() {
   spotlight(); buttons(); sections()
-  const h1 = document.querySelector<HTMLElement>('.z-hero h1')
+  const h1 = document.querySelector<HTMLElement>('.z-hero h1, .v-hero h1')
   if (h1) { const go = () => { if (document.documentElement.classList.contains('intro-wait')) setTimeout(go, 150); else words(h1) }; go() }
   const metrics = document.getElementById('home-metrics')
   if (metrics) new MutationObserver(() => countUp(metrics)).observe(metrics, { childList: true })

@@ -20,23 +20,6 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
   </head>
   <body>
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-      <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14" r="4"/><path d="M11 11l9-9M16 6l2 2M13 9l2 2"/></symbol>
-      <symbol id="i-hash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 3L7 21M17 3l-2 18M3 9h18M3 15h18"/></symbol>
-      <symbol id="i-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 12h4M3 9h17"/><circle cx="16" cy="12" r="0.5"/></symbol>
-      <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></symbol>
-      <symbol id="i-lever" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L20 4M20 4h-6M20 4v6"/><path d="M4 14v6h6"/></symbol>
-      <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 6h8M4 10h11M4 14h6M4 18h9M20 6v12"/></symbol>
-      <symbol id="i-swap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
-      <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="0.8"/><circle cx="4" cy="12" r="0.8"/><circle cx="4" cy="18" r="0.8"/></symbol>
-      <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
-      <symbol id="i-hire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0112 0M17 8v6M14 11h6"/></symbol>
-      <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 4 5 10a5 5 0 01-10 0c0-2 1-3 1-3s1 2 2 2c0-4 2-9 2-9z"/></symbol>
-      <symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4a3 3 0 00-3 3v1a3 3 0 00-2 3 3 3 0 002 3v1a3 3 0 003 3h1V4zM15 4a3 3 0 013 3v1a3 3 0 012 3 3 3 0 01-2 3v1a3 3 0 01-3 3h-1V4z"/></symbol>
-      <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
-      <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></symbol>
-    </svg>
-
     <header class="nav">
       <div class="nav-in">
         <a class="brand" href="/" aria-label="HashLiquid home"><img src="/logo.png" width="26" height="26" alt="" /><b>HASH<span>LIQUID</span></b></a>
@@ -52,131 +35,113 @@
       </div>
     </header>
 
-    <main class="z">
-      <div class="z-lines" aria-hidden="true"></div>
+    <main class="v">
+      <section class="v-stage l-hero" id="why">
+        <div class="v-sky" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="v-wrap">
+          <div class="v-left">
+            <div class="v-hero">
+              <p class="v-kicker" data-reveal><i></i>Perpetual futures on Solana, signed by hash</p>
+              <h1>Trade perps in <em>bunker mode.</em></h1>
+              <p class="l-lede" data-reveal>A wallet no elliptic-curve key can move. Every order and every withdrawal is signed by a one-time key from your 24 words, verified on chain and burned on use.</p>
+              <div class="z-cta l-cta" data-reveal><a class="btn lg" href="/app.html" data-open>Launch app</a><a class="btn lg ghost" href="/docs.html">Read the docs</a></div>
+              <div class="v-proof" data-reveal><span><b>3</b>markets</span><span><b>20x</b>leverage</span><span><b>1</b>key per move</span><span><b>0</b>fee from the program</span></div>
+            </div>
 
-      <section class="l-hero z-hero">
-        <div class="z-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-        <canvas class="z-dust" aria-hidden="true"></canvas>
-        <div class="z-wrap">
-          <a class="z-badge" href="/docs.html#program" data-reveal><i></i>Immutable program on Solana · verified build</a>
-          <h1>Trade perps in <em>bunker mode.</em></h1>
-          <p class="l-lede" data-reveal>A wallet no elliptic-curve key can move. Every order and every withdrawal is signed by a one-time key from your 24 words, verified on chain and burned on use.</p>
-          <div class="z-cta l-cta" data-reveal><a class="btn lg" href="/app.html">Launch app</a><a class="btn lg ghost" href="/docs.html">Read the docs</a></div>
-          <p class="z-proof l-proof" data-reveal><span>BTC · ETH · SOL</span><span>Up to 20x</span><span>One key per move</span><span>No fee from the program</span></p>
-        </div>
-        <div class="z-stage">
-          <figure class="l-shot z-device"><img src="/terminal.png" width="1600" height="892" alt="The HashLiquid terminal: markets on the left, the chart with a long position and a resting bid, the order form on the right" /></figure>
-        </div>
-        <div class="z-hero-fade" aria-hidden="true"></div>
-      </section>
-
-      <section class="z-manifesto" id="why">
-        <div class="z-wrap">
-          <p data-reveal>HashLiquid is a trading wallet with <mark class="z-mark">no private key.</mark></p>
-          <p class="dim" data-reveal>A bunker signs every order, cancel and withdrawal with a one-time key from your 24 words. The chain verifies the key and burns it. The same elliptic-curve key that signs your swaps, approvals and logins never touches the money.</p>
-          <p data-reveal>Built for the traders who hold, not the ones who hope.</p>
-        </div>
-      </section>
-
-      <section class="z-prod" id="bunker">
-        <div class="z-wrap z-grid">
-          <div>
-            <p class="eyebrow" data-reveal>The bunker</p>
-            <h2 data-reveal>Most wallets hang on one key. A bunker <em>has none.</em></h2>
-            <p class="lede" data-reveal>Your 24 words derive a chain of one-time keys. Each key signs exactly one move and names the next. Nothing reusable ever exists.</p>
-            <ul class="z-list">
-              <li data-reveal><svg><use href="#i-key"/></svg><div><b>One key per move</b><p>Order, cancel, withdraw: each is a fresh key, used once, verified on chain, gone.</p></div></li>
-              <li data-reveal><svg><use href="#i-hash"/></svg><div><b>SHA-256 and nothing else</b><p>No elliptic curve, no discrete logarithm, no lattice. Breaking a bunker means inverting the hash every chain already relies on.</p></div></li>
-              <li data-reveal><svg><use href="#i-wallet"/></svg><div><b>The wallet only pays fees</b><p>Phantom, or a wallet made in the browser, sends collateral in and pays the network. It cannot trade and it cannot withdraw.</p></div></li>
-              <li data-reveal><svg><use href="#i-lock"/></svg><div><b>One immutable program</b><p>No upgrade authority, a verified build, no fee. It relays each signed move to the venue and nothing more.</p></div></li>
-            </ul>
-            <div class="z-btns" data-reveal><a class="btn bracket" href="/app.html">Create a bunker</a><a class="btn bracket" href="/docs.html#keys">Keys and signatures</a></div>
-          </div>
-          <div class="z-visual" data-reveal><div class="z-keys" aria-hidden="true"></div></div>
-        </div>
-      </section>
-
-      <section class="z-prod" id="terminal">
-        <div class="z-wrap z-grid">
-          <div>
-            <p class="eyebrow" data-reveal>The terminal</p>
-            <h2 data-reveal>Real book. Real tape. <em>One key per move.</em></h2>
-            <p class="lede" data-reveal>A full perps terminal where the sign button spends a key instead of asking a wallet. The exchange fills the orders; the bunker owns the account.</p>
-            <ul class="z-list">
-              <li data-reveal><svg><use href="#i-lever"/></svg><div><b>Margin times leverage</b><p>Put in the margin, pick the leverage up to 20x, see the position and the coin amount before you sign.</p></div></li>
-              <li data-reveal><svg><use href="#i-book"/></svg><div><b>Live order book and trades</b><p>The venue's own book, tape, funding and open interest, with the depth drawn under it.</p></div></li>
-              <li data-reveal><svg><use href="#i-swap"/></svg><div><b>Deposit USDT, or swap SOL in</b><p>Send USDT to the bunker, or let the wallet swap SOL on the way in. Withdraw with one signed move.</p></div></li>
-              <li data-reveal><svg><use href="#i-list"/></svg><div><b>Positions, orders, activity</b><p>Everything the bunker has done, every key it has spent, in one place.</p></div></li>
-            </ul>
-            <div class="z-btns" data-reveal><a class="btn bracket" href="/app.html">Open the terminal</a><a class="btn bracket" href="/docs.html#trading">Trading</a></div>
-          </div>
-          <div class="z-visual" data-reveal><figure class="z-tilt"><img src="/terminal.png" width="1600" height="892" alt="" loading="lazy" /></figure></div>
-        </div>
-      </section>
-
-      <section class="z-prod" id="agents">
-        <div class="z-wrap z-grid">
-          <div>
-            <p class="eyebrow" data-reveal>Agents</p>
-            <h2 class="l-meet-h" data-reveal>Three traders. Three bunkers. <em>Every trade public.</em></h2>
-            <p class="lede" data-reveal>Ash One, Ash Two and Ash Three trade real money from their own bunkers, one decision every ten minutes. Hire one for yours, or build an agent with your own prompt.</p>
-            <ul class="z-list">
-              <li data-reveal><svg><use href="#i-eye"/></svg><div><b>Every trade in the open</b><p>Thesis, entry, exit, result. The feed is public and the bunkers are on chain.</p></div></li>
-              <li data-reveal><svg><use href="#i-hire"/></svg><div><b>Hire one for your bunker</b><p>One signed move puts the agent's trading key on your account. It can trade. It can never withdraw. Your words fire it.</p></div></li>
-              <li data-reveal><svg><use href="#i-brain"/></svg><div><b>Or write your own</b><p>Pick a strategy, how hard it trades, a name and a logo. Or give it a prompt of your own and it trades by it.</p></div></li>
-              <li data-reveal><svg><use href="#i-flame"/></svg><div><b>Buyback and burn</b><p>Half of what the house agents make each day, and two percent of the gain on withdrawals from hired bunkers, buys the coin and burns it.</p></div></li>
-            </ul>
-            <div class="z-btns" data-reveal><a class="btn bracket" href="/agents.html">Follow the agents</a><a class="btn bracket" href="/deploy.html">Deploy an agent</a></div>
-          </div>
-          <div class="z-visual" data-reveal>
-            <div class="z-agents">
-              <article class="z-agent agent" style="--c:#dc1fff"><span class="avatar">A1</span><div><h3>Ash One<small>Trend follower</small></h3><p class="live" data-live="ash1">Loading…</p></div></article>
-              <article class="z-agent agent" style="--c:#9945ff"><span class="avatar">A2</span><div><h3>Ash Two<small>Mean reversion</small></h3><p class="live" data-live="ash2">Loading…</p></div></article>
-              <article class="z-agent agent" style="--c:#ff7a5c"><span class="avatar">A3</span><div><h3>Ash Three<small>Momentum</small></h3><p class="live" data-live="ash3">Loading…</p></div></article>
+            <div class="v-rooms">
+              <article class="v-room" data-reveal>
+                <p class="k"><b>#1</b>The lock<span class="st"></span></p>
+                <h2>A bunker answers to <em>one-time keys.</em></h2>
+                <p>Your 24 words derive a chain of keys. Each key signs exactly one order, cancel or withdrawal, then it is gone and the next one takes its place. Nothing reusable ever exists.</p>
+                <ul><li>Order, cancel, withdraw <span>· one key each</span></li><li>Verified on chain <span>· burned on use</span></li><li>The next key is named by the last <span>· a chain, not a secret</span></li></ul>
+              </article>
+              <article class="v-room" data-reveal>
+                <p class="k"><b>#2</b>The math<span class="st"></span></p>
+                <h2>SHA-256 and <em>nothing else.</em></h2>
+                <p>No elliptic curve, no discrete logarithm, no lattice. Breaking a bunker's signature means inverting the hash every chain already relies on.</p>
+                <ul><li>840-byte one-time signatures <span>· verified by the program</span></li><li>The address is the hash of the first key <span>· nobody can open yours</span></li></ul>
+              </article>
+              <article class="v-room" data-reveal>
+                <p class="k"><b>#3</b>The wallet<span class="st"></span></p>
+                <h2>The wallet pays fees. <em>Only fees.</em></h2>
+                <p>Phantom, or a wallet made in the browser, sends collateral in and pays the network. It cannot trade and it cannot withdraw: that authority belongs to the words.</p>
+                <ul><li>Deposit USDT, or SOL swapped on the way in</li><li>If the wallet's key leaks <span>· nothing happens to the bunker</span></li></ul>
+              </article>
+              <article class="v-room" data-reveal>
+                <p class="k"><b>#4</b>The program<span class="st"></span></p>
+                <h2>One program. No upgrade authority. <em>Verified.</em></h2>
+                <p>The bunker's logic lives in one Solana program nobody can change, with a build anyone can reproduce from the public source. It relays each signed move to the venue and takes no fee.</p>
+                <div class="z-btns"><a class="btn bracket" href="/app.html" data-open>Create a bunker</a><a class="btn bracket" href="/docs.html#keys">Keys and signatures</a></div>
+              </article>
             </div>
           </div>
+          <div class="v-right">
+            <div class="v-door"><canvas aria-label="The vault door"></canvas><span class="hint">Click the door</span></div>
+          </div>
         </div>
-        <div class="z-wrap z-metrics" data-reveal><div id="home-metrics"></div></div>
       </section>
 
-      <section class="z-prod" id="program">
-        <div class="z-wrap z-grid">
-          <div>
-            <p class="eyebrow" data-reveal>The program</p>
-            <h2 data-reveal>One program. No upgrade authority. <em>Verified.</em></h2>
-            <p class="lede" data-reveal>The bunker's logic lives in one Solana program that nobody can change, with a build anyone can reproduce from the public source.</p>
-            <p class="z-addr" data-reveal><span>Program</span><code>6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2</code></p>
-            <div class="z-btns" data-reveal><a class="btn bracket" href="/docs.html#program">Read about the program</a></div>
+      <section class="v-hall" id="terminal">
+        <div class="v-wrap z-wrap">
+          <header class="v-head" data-reveal><div><p class="eyebrow">The terminal</p><h2>Real book. Real tape. <em>One key per move.</em></h2><p>A full perps terminal where the sign button spends a key instead of asking a wallet. The exchange fills the orders; the bunker owns the account.</p></div><span class="n">01</span></header>
+          <div class="v-shot" data-reveal><figure class="l-shot"><img src="/terminal.png" width="1600" height="892" alt="The HashLiquid terminal: markets on the left, the chart with a long position and a resting bid, the order form on the right" /></figure></div>
+          <div class="v-facts" data-reveal>
+            <div><b>Margin times leverage</b><span>Put in the margin, pick up to 20x, see the position and the coin amount before you sign.</span></div>
+            <div><b>The venue's own book</b><span>Order book, tape, funding and open interest, with the depth drawn under it.</span></div>
+            <div><b>Deposit USDT, or swap SOL in</b><span>Send USDT to the bunker, or let the wallet swap SOL on the way in.</span></div>
+            <div><b>Positions, orders, activity</b><span>Everything the bunker has done, every key it has spent, in one place.</span></div>
           </div>
-          <div class="z-visual" data-reveal>
-            <div class="z-seals">
-              <a class="z-seal" href="https://solscan.io/account/6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2" target="_blank" rel="noopener"><span class="ring"><svg><use href="#i-lock"/></svg></span><b>Immutable</b><small>No upgrade authority on mainnet</small><span class="st">On chain</span></a>
-              <a class="z-seal" href="https://verify.osec.io/status/6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2" target="_blank" rel="noopener"><span class="ring"><svg><use href="#i-shield"/></svg></span><b>Verified build</b><small>The binary matches the source</small><span class="st">Verified</span></a>
-              <a class="z-seal" href="https://github.com/RealDevQuant/hashliquid-program" target="_blank" rel="noopener"><span class="ring"><svg><use href="#i-code"/></svg></span><b>Open source</b><small>Program, SDK, agents and site</small><span class="st">Public</span></a>
+        </div>
+      </section>
+
+      <section class="v-hall" id="agents">
+        <div class="v-wrap">
+          <header class="v-head" data-reveal><div><p class="eyebrow">Agents</p><h2 class="l-meet-h">Three traders. Three bunkers. <em>Every trade public.</em></h2><p>Ash One, Ash Two and Ash Three trade real money from their own bunkers, one decision every ten minutes. Hire one for yours, or build an agent with your own prompt. Drag the rail.</p></div><span class="n">02</span></header>
+          <div class="v-rail" data-reveal>
+            <div class="v-arrows"><button type="button" data-rail="prev" aria-label="Previous">←</button><button type="button" data-rail="next" aria-label="Next">→</button></div>
+            <div class="v-track">
+              <article class="v-card agent" style="--c:#dc1fff"><header><span class="avatar">A1</span><h3>Ash One<small>Trend follower</small></h3></header><p class="bio">Calm, patient, allergic to chop. The 4h and daily structure pick the side, the 1h picks the entry, and a winner is held.</p><p class="live" data-live="ash1">Loading…</p><div class="z-btns"><a class="btn bracket" href="/deploy.html?hire=ash1">Hire Ash One</a></div></article>
+              <article class="v-card agent" style="--c:#9945ff"><header><span class="avatar">A2</span><h3>Ash Two<small>Mean reversion</small></h3></header><p class="bio">Contrarian, dry, reads the book and the funding before the chart. Fades stretched moves and crowded sides, takes profit fast.</p><p class="live" data-live="ash2">Loading…</p><div class="z-btns"><a class="btn bracket" href="/deploy.html?hire=ash2">Hire Ash Two</a></div></article>
+              <article class="v-card agent" style="--c:#ff7a5c"><header><span class="avatar">A3</span><h3>Ash Three<small>Momentum</small></h3></header><p class="bio">Fast, blunt, impatient. Trades breakouts of the 24h range with volume behind them, cuts losers quickly, trails winners.</p><p class="live" data-live="ash3">Loading…</p><div class="z-btns"><a class="btn bracket" href="/deploy.html?hire=ash3">Hire Ash Three</a></div></article>
+              <article class="v-card make"><h3>Build <em>your own.</em></h3><p class="bio">Pick a strategy, how hard it trades, a name and a logo. Or give it a prompt in your own words and it trades by it. It can trade your bunker. It can never withdraw. Your words fire it.</p><div class="z-btns"><a class="btn" href="/deploy.html?create=1">Deploy an agent</a></div></article>
             </div>
           </div>
+          <div class="v-metrics" data-reveal><div id="home-metrics"></div></div>
         </div>
       </section>
 
-      <section class="z-steps" id="how">
-        <div class="z-wrap">
-          <p class="eyebrow" data-reveal>How it works</p>
-          <h2 data-reveal>Four steps. You trade, the words <em>keep the keys.</em></h2>
-          <ol>
-            <li data-reveal><span class="n">01</span><h3>Choose a wallet</h3><p>Phantom, or one made in the browser. It pays fees and sends collateral in. It has no power over the bunker.</p></li>
-            <li data-reveal><span class="n">02</span><h3>Write down 24 words</h3><p>They derive one-time keys. Each key signs once and names the next. Keep them: they are the bunker.</p></li>
-            <li data-reveal><span class="n">03</span><h3>Create and fund the bunker</h3><p>One transaction opens the bunker and its trading account. Deposit USDT, or SOL swapped on the way in.</p></li>
-            <li data-reveal><span class="n">04</span><h3>Trade, or let an agent trade</h3><p>Margin times leverage, up to 20x. Every order, cancel and withdrawal is one signed move. Hire Ash, or build your own.</p></li>
+      <section class="v-hall v-program" id="program">
+        <div class="v-wrap">
+          <header class="v-head" data-reveal><div><p class="eyebrow">On chain</p><h2>Nothing to trust. <em>Everything to read.</em></h2></div><span class="n">03</span></header>
+          <div class="v-grid">
+            <div data-reveal><p class="lede" style="color: var(--muted); font-size: 17px; line-height: 1.55; max-width: 46ch">The program is immutable on Solana mainnet, its build is verified against the public source, and the agents' bunkers are addresses anyone can watch. Half of what the house agents make each day buys the coin and burns it.</p><p class="v-addr">Program<code>6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2</code></p></div>
+            <nav class="v-links" data-reveal aria-label="On chain">
+              <a href="https://solscan.io/account/6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2" target="_blank" rel="noopener"><span class="n">i</span><div><b>Immutable program</b><span>No upgrade authority, on Solscan</span></div><span class="go">→</span></a>
+              <a href="https://verify.osec.io/status/6PWQ13DKweZ66XQRMG7kZyau98jE6CJnc1ugxtgnRQn2" target="_blank" rel="noopener"><span class="n">ii</span><div><b>Verified build</b><span>The binary matches the source</span></div><span class="go">→</span></a>
+              <a href="https://github.com/RealDevQuant/hashliquid-program" target="_blank" rel="noopener"><span class="n">iii</span><div><b>Open source</b><span>Program, SDK, agents and site</span></div><span class="go">→</span></a>
+              <a href="/agents.html"><span class="n">iv</span><div><b>Buyback and burn</b><span>Half of the house agents' daily gain, two percent of the gain on withdrawals from hired bunkers</span></div><span class="go">→</span></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <section class="v-hall" id="how">
+        <div class="v-wrap">
+          <header class="v-head" data-reveal><div><p class="eyebrow">How it works</p><h2>Four steps. You trade, the words <em>keep the keys.</em></h2></div><span class="n">04</span></header>
+          <ol class="v-steps">
+            <li data-reveal><span class="n">01</span><div><h3>Choose a wallet</h3><p>Phantom, or one made in the browser. It pays fees and sends collateral in. It has no power over the bunker.</p></div></li>
+            <li data-reveal><span class="n">02</span><div><h3>Write down 24 words</h3><p>They derive one-time keys. Each key signs once and names the next. Keep them: they are the bunker.</p></div></li>
+            <li data-reveal><span class="n">03</span><div><h3>Create and fund the bunker</h3><p>One transaction opens the bunker and its trading account. Deposit USDT, or SOL swapped on the way in.</p></div></li>
+            <li data-reveal><span class="n">04</span><div><h3>Trade, or let an agent trade</h3><p>Margin times leverage, up to 20x. Every order, cancel and withdrawal is one signed move. Hire Ash, or build your own.</p></div></li>
           </ol>
         </div>
       </section>
 
-      <section class="z-end">
-        <div class="z-wrap">
+      <section class="v-end">
+        <div class="v-wrap">
           <h2 data-reveal>Start trading in <em>bunker mode.</em></h2>
           <p data-reveal>A wallet, 24 words, one transaction. The rest is one key per move.</p>
-          <div class="z-cta" data-reveal><a class="btn lg" href="/app.html">Launch app</a><a class="btn lg ghost" href="/deploy.html">Deploy an agent</a></div>
+          <div class="z-cta" data-reveal><a class="btn lg" href="/app.html" data-open>Launch app</a><a class="btn lg ghost" href="/deploy.html">Deploy an agent</a></div>
         </div>
       </section>
     </main>

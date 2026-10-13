@@ -949,17 +949,17 @@ input, textarea { text-transform: none; }
 @media (max-width: 760px) { .t-strip { gap: 6px 16px; padding: 10px 12px; } .t-stat.big b { font-size: 22px; } }
 
 /* ---- the touch: light under the pointer, buttons that lean and ripple, beams between sections ---- */
-.z-key, .z-agent, .z-seal, .z-steps li, .z-list li, .ag-card, .dp-opt, .dp-tab, .dp-card, .acct-card, .l-card, .gate-card, .z-badge, .hire-row, .ag-open, .chat-line, .agent-line { position: relative; isolation: isolate; --mx: 50%; --my: 50%; }
-.z-key::before, .z-agent::before, .z-seal::before, .z-steps li::before, .z-list li::before, .ag-card::before, .dp-opt::before, .dp-tab::before, .dp-card::before, .acct-card::before, .l-card::before, .gate-card::before, .z-badge::before, .hire-row::before, .ag-open::before, .chat-line::before, .agent-line::before {
+.z-key, .z-agent, .z-seal, .z-steps li, .z-list li, .ag-card, .dp-opt, .dp-tab, .dp-card, .acct-card, .l-card, .gate-card, .z-badge, .hire-row, .ag-open, .chat-line, .agent-line, .v-card, .v-facts div { position: relative; isolation: isolate; --mx: 50%; --my: 50%; }
+.z-key::before, .z-agent::before, .z-seal::before, .z-steps li::before, .z-list li::before, .ag-card::before, .dp-opt::before, .dp-tab::before, .dp-card::before, .acct-card::before, .l-card::before, .gate-card::before, .z-badge::before, .hire-row::before, .ag-open::before, .chat-line::before, .agent-line::before, .v-card::before, .v-facts div::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1; opacity: 0; transition: opacity 0.4s ease;
   background: radial-gradient(260px circle at var(--mx) var(--my), rgba(176, 140, 255, 0.16), transparent 62%);
 }
-.z-key::after, .z-agent::after, .z-seal::after, .z-steps li::after, .ag-card::after, .dp-opt::after, .dp-tab::after, .dp-card::after, .acct-card::after, .l-card::after, .gate-card::after, .z-badge::after, .hire-row::after, .ag-open::after, .chat-line::after, .agent-line::after {
+.z-key::after, .z-agent::after, .z-seal::after, .z-steps li::after, .ag-card::after, .dp-opt::after, .dp-tab::after, .dp-card::after, .acct-card::after, .l-card::after, .gate-card::after, .z-badge::after, .hire-row::after, .ag-open::after, .chat-line::after, .agent-line::after, .v-card::after {
   content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.4s ease; padding: 1px;
   background: radial-gradient(300px circle at var(--mx) var(--my), rgba(206, 184, 255, 0.95), transparent 60%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
 }
-.z-key:hover::before, .z-agent:hover::before, .z-seal:hover::before, .z-steps li:hover::before, .z-list li:hover::before, .ag-card:hover::before, .dp-opt:hover::before, .dp-tab:hover::before, .dp-card:hover::before, .acct-card:hover::before, .l-card:hover::before, .gate-card:hover::before, .z-badge:hover::before, .hire-row:hover::before, .ag-open:hover::before, .chat-line:hover::before, .agent-line:hover::before,
+.z-key:hover::before, .z-agent:hover::before, .z-seal:hover::before, .z-steps li:hover::before, .z-list li:hover::before, .ag-card:hover::before, .dp-opt:hover::before, .dp-tab:hover::before, .dp-card:hover::before, .acct-card:hover::before, .l-card:hover::before, .gate-card:hover::before, .z-badge:hover::before, .hire-row:hover::before, .ag-open:hover::before, .chat-line:hover::before, .agent-line:hover::before, .v-card:hover::before, .v-facts div:hover::before, .v-card:hover::after,
 .z-key:hover::after, .z-agent:hover::after, .z-seal:hover::after, .z-steps li:hover::after, .ag-card:hover::after, .dp-opt:hover::after, .dp-tab:hover::after, .dp-card:hover::after, .acct-card:hover::after, .l-card:hover::after, .gate-card:hover::after, .z-badge:hover::after, .hire-row:hover::after, .ag-open:hover::after, .chat-line:hover::after, .agent-line:hover::after { opacity: 1; }
 .z-list li { border-radius: 10px; margin: 0 -14px; padding-left: 14px; padding-right: 14px; }
 .z-list li:hover svg { transform: scale(1.12); }
@@ -978,8 +978,8 @@ input, textarea { text-transform: none; }
 .nav-links a:hover::after { transform: scaleX(1); }
 
 /* a beam runs along the top edge of a section as it arrives */
-.z-manifesto, .z-prod, .z-steps, .z-end { position: relative; overflow: hidden; }
-.z-manifesto::before, .z-prod::before, .z-steps::before, .z-end::before { content: ''; position: absolute; top: -1px; left: 0; width: 28%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent) 40%, #fff 50%, var(--accent) 60%, transparent); opacity: 0; pointer-events: none; }
+.z-manifesto, .z-prod, .z-steps, .z-end, .v-hall, .v-end { position: relative; overflow: hidden; }
+.z-manifesto::before, .z-prod::before, .z-steps::before, .z-end::before, .v-hall::before, .v-end::before { content: ''; position: absolute; top: -1px; left: 0; width: 28%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent) 40%, #fff 50%, var(--accent) 60%, transparent); opacity: 0; pointer-events: none; }
 .lit::before { animation: beam 1.5s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; }
 @keyframes beam { 0% { transform: translateX(-100%); opacity: 1; } 100% { transform: translateX(360%); opacity: 0; } }
 

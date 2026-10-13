@@ -3,7 +3,7 @@
 import '@fontsource-variable/instrument-sans'
 import '@fontsource/instrument-serif/400-italic.css'
 import './style.css'
-import './home.css'
+import './home4.css'
 import { wireLinks } from './links.ts'
 import { all as fx } from './fx.ts'
 import { FLAT_TEXT, ago, avatarHtml, fetchFeed, metricsHtml } from './agents.ts'
@@ -56,6 +56,5 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
 // the home's motion and the floating nav
 {
   void import('./nav.ts').then((m) => m.all())
-  const dust = document.querySelector<HTMLCanvasElement>('.z-dust'), dev = document.querySelector<HTMLElement>('.z-device'), keys = document.querySelector<HTMLElement>('.z-keys')
-  if (dust || dev || keys) void import('./home.ts').then((m) => { if (dust) m.dust(dust); if (dev) m.device(dev); if (keys) m.keys(keys) })
+  if (document.querySelector('.v-stage')) void import('./home4.ts').then((m) => m.all())
 }

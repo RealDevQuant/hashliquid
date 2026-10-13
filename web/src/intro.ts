@@ -47,9 +47,10 @@ const hazard = () => canvasTex(256, (g, s) => {
   for (let i = 0; i < 1800; i++) { g.fillStyle = `rgba(0,0,0,${rnd() * 0.3})`; g.fillRect(rnd() * s, rnd() * s, 2, 2) }
 }, [34, 1])
 
-interface Api { frame(now: number, t: number | null): number; fit(): void; dispose(): void; state: { t0: number | null; mx: number; my: number; camZ: number; lift: number } }
+export interface Api { frame(now: number, t: number | null): number; fit(): void; dispose(): void; state: { t0: number | null; mx: number; my: number; camZ: number; lift: number } }
 
-function buildScene(canvas: HTMLCanvasElement, logo: THREE.Texture): Api {
+/** The door. `centre` frames it in the middle of the canvas (the hero); the intro keeps it high, with the line under it. */
+export function buildScene(canvas: HTMLCanvasElement, logo: THREE.Texture, opts: { centre?: boolean } = {}): Api {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
   renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -129,8 +130,8 @@ function buildScene(canvas: HTMLCanvasElement, logo: THREE.Texture): Api {
   const fit = () => {
     const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight
     renderer.setSize(w, h, false); camera.aspect = w / h
-    state.camZ = 17.4 * Math.max(1, 0.68 / camera.aspect)
-    state.lift = camera.aspect < 0.8 ? -2.2 : -1.2
+    state.camZ = (opts.centre ? 13.6 : 17.4) * Math.max(1, 0.68 / camera.aspect)
+    state.lift = opts.centre ? 0 : camera.aspect < 0.8 ? -2.2 : -1.2
     ;(scene.fog as THREE.FogExp2).density = 0.035 * 17.4 / state.camZ
     camera.updateProjectionMatrix()
   }
@@ -165,6 +166,14 @@ function buildScene(canvas: HTMLCanvasElement, logo: THREE.Texture): Api {
 }
 
 /** Mounts the vault over the page; resolves when it has gone. */
+/** Loads the mark and builds the door on `canvas`; the caller runs the frames. */
+export function mountDoor(canvas: HTMLCanvasElement, opts: { centre?: boolean } = {}): Promise<Api> {
+  return new Promise((ok, no) => new THREE.TextureLoader().load('/logo-1024.png', (logo) => {
+    logo.colorSpace = THREE.SRGBColorSpace; logo.anisotropy = 16; logo.minFilter = THREE.LinearMipmapLinearFilter; logo.generateMipmaps = true
+    try { ok(buildScene(canvas, logo, opts)) } catch (e) { no(e) }
+  }, undefined, no))
+}
+
 export function showIntro(): Promise<void> {
   return new Promise((done) => {
     const root = document.createElement('div'); root.className = 'intro'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', 'HashLiquid')
