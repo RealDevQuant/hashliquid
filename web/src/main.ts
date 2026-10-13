@@ -1017,7 +1017,7 @@ function orderPanel(): string {
     <div class="side"><button data-action="side" data-arg="long" class="long ${long ? 'on' : ''}">Long</button><button data-action="side" data-arg="short" class="short ${long ? '' : 'on'}">Short</button></div>
     <div class="t-type"><button data-action="type" data-arg="market" class="${limitMode ? '' : 'on'}">Market</button><button data-action="type" data-arg="limit" class="${limitMode ? 'on' : ''}">Limit</button></div>
     <div class="t-sizemode"><button type="button" class="chip ${sizeMode() === 'margin' ? 'on' : ''}" data-action="sizeMode" data-arg="margin">Margin × leverage</button><button type="button" class="chip ${sizeMode() === 'base' ? 'on' : ''}" data-action="sizeMode" data-arg="base">Size in ${esc(m?.coin ?? '')}</button></div>
-    <div class="row">${field('size', sizeMode() === 'margin' ? `Margin (${quoteName()} you put behind it, up to ${usd(collateral())})` : `Size (${esc(m?.coin ?? '')})`, 'inputmode="decimal" placeholder="' + (sizeMode() === 'margin' ? '100' : '') + '"')}${limitMode ? field('limit', `Limit price (${quoteName()})`, 'inputmode="decimal"') : field('slippage', 'Slippage %', 'inputmode="decimal"')}</div>
+    <div class="row">${field('size', sizeMode() === 'margin' ? `Margin (${quoteName()})` : `Size (${esc(m?.coin ?? '')})`, 'inputmode="decimal" placeholder="' + (sizeMode() === 'margin' ? '100' : '') + '"')}${limitMode ? field('limit', `Limit price (${quoteName()})`, 'inputmode="decimal"') : field('slippage', 'Slippage %', 'inputmode="decimal"')}</div>
     ${leverageHtml()}${errLine()}
     <label class="t-check"><input type="checkbox" data-action="reduceOnly" ${ui.form.reduceOnly ? 'checked' : ''} /> Reduce only</label>
     ${previewHtml()}
