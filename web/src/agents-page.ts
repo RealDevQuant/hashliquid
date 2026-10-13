@@ -2,14 +2,17 @@
   agents-page.ts — the Agents page: three profiles (who, strategy, wallet, money made or lost, win/loss, what is
   open now) and the table of every trade. Everything comes from the agents' public feed.
 */
-import '@fontsource-variable/geist-mono'
+import '@fontsource-variable/instrument-sans'
+import '@fontsource/instrument-serif/400-italic.css'
 import './style.css'
 import { wireLinks } from './links.ts'
+import { all as fx } from './fx.ts'
 import { AGGR_LABEL, BASE_LABEL, FLAT_TEXT, ago, avatarHtml, duration, fetchFeed, metricsHtml, type Agent, type Custom, type Feed, type Hired, type Trade } from './agents.ts'
 import { AGENT_META } from './hire.ts'
 import { BURN_FEE_PCT, BURN_SHARE_PCT, BURN_WALLET } from './burn.ts'
 
 wireLinks()
+fx()
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 const n = (x: number, d = 2) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
 const px = (x: number) => (x >= 1000 ? n(x, 1) : x >= 1 ? n(x, 3) : n(x, 5))

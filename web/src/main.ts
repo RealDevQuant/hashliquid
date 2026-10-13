@@ -13,7 +13,9 @@
   Orders are filled by the exchange's keepers.
 */
 import './polyfill.ts'
-import '@fontsource-variable/geist-mono'
+import { spotlight, buttons } from './fx.ts'
+import '@fontsource-variable/instrument-sans'
+import '@fontsource/instrument-serif/400-italic.css'
 import './style.css'
 import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, type TransactionInstruction, VersionedTransaction } from '@solana/web3.js'
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
@@ -1187,7 +1189,7 @@ function deployView(): string {
     <button class="wide lg" data-action="deployGo" ${!enough || ui.busy ? 'disabled' : ''}>${choice === 'custom' ? 'Create the agent' : `Hire ${esc(AGENT_META[d.agent].name)}`}</button>
     ${ui.log.length ? `<p class="${ui.log[0].kind === 'err' ? 'gate-err' : 'dim'} small">${esc(ui.log[0].text)}</p>` : ''}`
   return `<main class="deploy">
-    <header class="dp-head"><p class="eyebrow">Deploy</p><h1>Put an agent on your bunker.</h1><p class="l-lede">Four steps. The agent trades, you keep the keys.</p>${bar}</header>
+    <header class="dp-head"><p class="eyebrow">Deploy</p><h1>Put an agent on <em>your bunker.</em></h1><p class="l-lede">Four steps. The agent trades, you keep the keys.</p>${bar}</header>
     ${step(1, 'Wallet', s1, has1 ? 'done' : 'now')}
     ${step(2, '24 words', s2, !has1 ? 'later' : has2 ? 'done' : 'now')}
     ${step(3, 'Choose', s3, has1 && has2 ? 'now' : 'later')}
@@ -1265,7 +1267,7 @@ function render() {
       ${orderPanel()}
     </main>${ui.drawer ? drawer() : ''}` : gate()}
     <div id="busy" role="status">${esc(ui.busy)}</div>`
-  wireLinks()
+  wireLinks(); spotlight(); buttons()
   const slot = DEPLOY ? null : document.getElementById('chart-slot')
   if (slot) {
     slot.insertBefore(chartHost, slot.firstChild)
