@@ -13,6 +13,7 @@
 */
 import { PublicKey, type Keypair, type TransactionInstruction } from '@solana/web3.js'
 import * as H from '../src/index.ts'
+import { burnDue, dailyBurn, feedBurns } from './burn.ts'
 import { AGENTS, AGGR, CLIENT, CUSTOM_MODEL, PROMPT_BASE, ownerPrompt, LAUNCH_GAP_MINUTES, LAUNCH_ROUNDS, LIMITS, MAX_CUSTOM_AGENTS, MIN_CLIENT_EQUITY, OFFSETS, customDef, type AgentDef, type Limits } from './config.ts'
 import { V, conn, payer, agentChain, act, clearPending, account, emptyAccount, marketOrderIx, cancelIdsIx, clientsOf, customAgents, customDelegate, delegateOf, send, log, solBalance, sleep, type AgentChain, type Account, type Client } from './chain.ts'
 import { markets as readMarkets, forModel, type MarketData } from './data.ts'
@@ -553,7 +554,7 @@ async function feedCustom(cl: Client, queued: boolean, c: Ctx): Promise<FeedCust
   }
 }
 export async function publish(c: Ctx): Promise<void> {
-  const feed: Feed = { updatedAt: now(), cadenceMinutes: LIMITS.cadenceMinutes, agents: [], hired: [], custom: [], metrics: { agentsDeployed: 0, hiredBunkers: 0, customAgents: 0, positionsOpen: 0, tradesTotal: 0, volumeUsd: 0, aum: 0 } }
+  const feed: Feed = { updatedAt: now(), cadenceMinutes: LIMITS.cadenceMinutes, agents: [], hired: [], custom: [], metrics: { agentsDeployed: 0, hiredBunkers: 0, customAgents: 0, positionsOpen: 0, tradesTotal: 0, volumeUsd: 0, aum: 0, burnedUsd: 0 }, burns: feedBurns() }
   for (const def of AGENTS) {
     feed.agents.push(await feedAgent(def, c))
     for (const h of await mapLimit(await clientsOf(def, houseBook(def).authority), READ_AT_ONCE, (cl) => feedHired(def, cl, c).catch(() => null))) if (h) feed.hired.push(h)
@@ -568,6 +569,7 @@ export async function publish(c: Ctx): Promise<void> {
   m.tradesTotal = allTrades.length
   m.volumeUsd = r2(allTrades.reduce((s, t) => s + t.size * t.entry + (t.exit != null ? t.size * t.exit : 0), 0))
   m.aum = r2(feed.agents.reduce((s, a) => s + a.equity, 0) + feed.hired.reduce((s, h) => s + h.equity, 0) + feed.custom.reduce((s, x) => s + x.equity, 0))
+  m.burnedUsd = feed.burns.totalUsd
   log(`feed published: ${await publishFeed(feed)}`)
 }
 
@@ -633,6 +635,7 @@ export async function loop(): Promise<never> {
       const due = AGENTS.filter((a) => (decided.get(a.id) ?? 0) < slotStart(OFFSETS[a.id] ?? 0))   // its slot started after its last decision
       if (due.length) await decisionCycle(due, (id) => decided.set(id, Date.now()))
     })
+    if (burnDue()) await safely('burn', async () => dailyBurn(await context(), false))   // once a day: the house share, then everything in the burn wallet
     await safely('custom', async () => { const ran = await customCycle(await context()); if (ran) { await sleep(10_000); await publish(await context()) } })
     // a long pass (many hired bunkers, many custom agents) must not leave the stops unwatched
     if (Date.now() - started > GUARD_MS) await safely('guard', guardPass)

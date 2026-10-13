@@ -28,8 +28,10 @@ export interface Custom {
   lastThesis: string | null; lastAt: number | null; moves: Move[]; queued: boolean
   prompt?: string | null
 }
-export interface Metrics { agentsDeployed: number; hiredBunkers: number; customAgents: number; positionsOpen: number; tradesTotal: number; volumeUsd: number; aum: number }
-export interface Feed { updatedAt: number; cadenceMinutes: number; agents: Agent[]; hired?: Hired[]; custom?: Custom[]; metrics?: Metrics }
+export interface Metrics { agentsDeployed: number; hiredBunkers: number; customAgents: number; positionsOpen: number; tradesTotal: number; volumeUsd: number; aum: number; burnedUsd?: number }
+export interface BurnRecord { t: number; day: string; usd: number; tokens: number; parts: Record<string, number>; txs: string[] }
+export interface Burns { mint: string; burner: string; sharePct: number; feePct: number; totalUsd: number; totalTokens: number; count: number; last: BurnRecord[] }
+export interface Feed { updatedAt: number; cadenceMinutes: number; agents: Agent[]; hired?: Hired[]; custom?: Custom[]; metrics?: Metrics; burns?: Burns }
 /** Where the feed and the users' logos live. */
 export const BLOB_BASE = FEED_URL.replace(/\/agents\.json$/, '')
 /** A user-made agent's logo, uploaded through /api/logo. */
@@ -78,6 +80,7 @@ export function metricsHtml(m: Metrics | undefined): string {
     <div><b>${n(m.tradesTotal)}</b><span>trades</span></div>
     <div><b>${usd(m.volumeUsd)}</b><span>traded</span></div>
     <div><b>${usd(m.aum)}</b><span>under management</span></div>
+    <div><b>${usd(m.burnedUsd ?? 0)}</b><span>burned</span></div>
   </div>`
 }
 

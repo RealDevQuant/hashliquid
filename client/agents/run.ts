@@ -5,10 +5,12 @@
     node agents/run.ts --once     one decision cycle
     node agents/run.ts --dry      decide and log, sign nothing (also publishes the feed)
     node agents/run.ts --publish  only rebuild the feed from the chain and the logs
+    node agents/run.ts --burn     the day's buyback and burn now (add --dry to see the numbers and the quote only)
     node agents/run.ts --guard    one guard pass
     node agents/run.ts --launch   launch day: two rounds of forced entries, then exit (add --dry to rehearse)
 */
 import { context, decisionCycle, flags, guardPass, launch, loop, publish } from './engine.ts'
+import { dailyBurn } from './burn.ts'
 
 const has = (f: string) => process.argv.includes(f)
 flags.dry = has('--dry')
@@ -17,6 +19,7 @@ async function main() {
   if (has('--launch')) return launch()
   if (has('--publish')) return publish(await context())
   if (has('--guard')) return guardPass()
+  if (has('--burn')) return dailyBurn(await context(), flags.dry)   // the day's buyback and burn now (--dry: numbers and quote only)
   if (has('--once') || flags.dry) return decisionCycle()
   await loop()
 }

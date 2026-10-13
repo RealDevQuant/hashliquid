@@ -144,6 +144,15 @@ export function customDef(cfg: { base: 1 | 2 | 3 | 4; label: string }, bunker: s
     style: b.style,
   }
 }
+/** Buyback and burn. The coin's mint is set at launch; until then the daily run does nothing. */
+export const BURN = Object.freeze({
+  mint: process.env.BURN_MINT ?? '',   // the coin's mint address
+  share: 0.5,                          // of each house agent's positive 24h result
+  minUsd: 1,                           // below this a share is carried to the next day
+  hourUtc: 0,                          // the daily run, once the UTC day has turned
+  slippageBps: 300,
+  burner: '2uVbmno7mD7kSM4Rf97iE7cc4TpBRngv2UiWsK6NRDFz',   // the burn wallet (.secrets/agents/burner.json): every burn leaves from here
+})
 export const MIN_CLIENT_EQUITY = 20   // USDT: below this a hired bunker is left alone (the venue's smallest order is about 9)
 export const MAX_CLIENTS = 300        // per agent
 

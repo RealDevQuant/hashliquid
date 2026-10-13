@@ -130,8 +130,15 @@ export interface FeedCustom {
   lastThesis: string | null; lastAt: number | null; moves: Move[]; queued: boolean
   prompt?: string | null   // base 4: the owner's own instructions, as published
 }
-export interface FeedMetrics { agentsDeployed: number; hiredBunkers: number; customAgents: number; positionsOpen: number; tradesTotal: number; volumeUsd: number; aum: number }
-export interface Feed { updatedAt: number; cadenceMinutes: number; agents: FeedAgent[]; hired: FeedHired[]; custom: FeedCustom[]; metrics: FeedMetrics }
+export interface FeedMetrics { agentsDeployed: number; hiredBunkers: number; customAgents: number; positionsOpen: number; tradesTotal: number; volumeUsd: number; aum: number; burnedUsd: number }
+/** One burn: the USDT turned into coin and burned, where it came from (each house agent, and the fees), the transactions. */
+export interface BurnRecord { t: number; day: string; usd: number; tokens: number; parts: Record<string, number>; txs: string[] }
+export interface BurnState { lastDay: string; checkpoint: Record<string, number>; owed: Record<string, number>; burns: BurnRecord[] }
+const burnsFile = new URL('burns.json', dataDir)
+export const readBurnState = (): BurnState => (existsSync(burnsFile) ? JSON.parse(readFileSync(burnsFile, 'utf8')) : { lastDay: '', checkpoint: {}, owed: {}, burns: [] })
+export const saveBurnState = (s: BurnState): void => writeAtomic(burnsFile, JSON.stringify(s, null, 1))
+export interface FeedBurns { mint: string; burner: string; sharePct: number; feePct: number; totalUsd: number; totalTokens: number; count: number; last: BurnRecord[] }
+export interface Feed { updatedAt: number; cadenceMinutes: number; agents: FeedAgent[]; hired: FeedHired[]; custom: FeedCustom[]; metrics: FeedMetrics; burns: FeedBurns }
 
 const token = (): string => {
   const env = process.env.BLOB_READ_WRITE_TOKEN

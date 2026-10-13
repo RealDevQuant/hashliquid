@@ -24,6 +24,7 @@ import { FLAT_TEXT, ago, avatarHtml, chartTrades, fetchFeed, type Feed } from '.
 import { wireLinks } from './links.ts'
 import { AGENT_META, CUSTOM_DELEGATE, DELEGATES, MIN_HIRE_USDT, agentOfDelegate } from './hire.ts'
 import { AGGR_LABEL, BASE_LABEL } from './agents.ts'
+import { BURN_FEE_PCT, BURN_WALLET } from './burn.ts'
 import { browserWalletSecret, connectBrowserWallet, connectPhantom, hasBrowserWallet, hasPhantom, importBrowserWallet, type Wallet } from './wallet.ts'
 
 const V = H.V
@@ -194,12 +195,12 @@ const signContext = (): H.SignContext => {
 }
 
 /** One signed move of the bunker: the signature first, then the instruction it authorizes. */
-async function act(ix: TransactionInstruction, note: string, before: TransactionInstruction[] = []): Promise<bigint> {
+async function act(ix: TransactionInstruction, note: string, before: TransactionInstruction[] = [], after: TransactionInstruction[] = []): Promise<bigint> {
   const p = H.prepareAction(signContext(), ix, note)
   ui.busy = `Key #${p.signed.nonce}: sending the signature…`; render()
   await send([p.authorize], H.CU.AUTHORIZE)
   ui.busy = `Key #${p.signed.nonce}: sending the ${note}…`; render()
-  await send([...before, p.execute], H.CU.EXECUTE)
+  await send([...before, p.execute, ...after], H.CU.EXECUTE)
   return p.signed.nonce
 }
 
@@ -294,10 +295,15 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     if (f('to').trim()) { try { owner = new PublicKey(f('to').trim()) } catch { throw new Error('The destination is not a valid Solana address.') } }
     const to = getAssociatedTokenAddressSync(mint, owner, true)
     // "everything": ask for more than there is and let the exchange cap it at the balance (reduce-only)
+    // buyback and burn: 2% of the gain inside a withdrawal from a bunker that runs or ran an agent, in the same transaction
+    const fee = burnFeeDue(all ? collateral() : amount)
+    if (fee > 0n && !owner.equals(ui.wallet!.publicKey)) throw new Error(`${usd(fee)} ${quoteName()} of this withdrawal is the buyback-and-burn share (${BURN_FEE_PCT}% of the gain): withdraw to the connected wallet, which sends it on.`)
+    const burnAta = getAssociatedTokenAddressSync(mint, new PublicKey(BURN_WALLET))
+    const after = fee > 0n ? [createAssociatedTokenAccountIdempotentInstruction(ui.wallet!.publicKey, burnAta, new PublicKey(BURN_WALLET), mint), createTransferInstruction(to, burnAta, ui.wallet!.publicKey, fee)] : []
     const ix = V.withdrawIx({ authority: bunker, signer: ui.chain.state!.signer, marketIndex: QUOTE, amount: all ? amount * 2n : amount, toTokenAccount: to, remaining: await quoteAccounts(), reduceOnly: true })
-    const nonce = await act(ix, 'withdrawal', [createAssociatedTokenAccountIdempotentInstruction(ui.wallet!.publicKey, to, owner, mint)])
+    const nonce = await act(ix, 'withdrawal', [createAssociatedTokenAccountIdempotentInstruction(ui.wallet!.publicKey, to, owner, mint)], after)
     ui.form.withdraw = ''; ui.form.to = ''
-    return `Withdrew ${all ? 'everything' : usd(amount) + ' ' + quoteName()} to ${short(owner)} with key #${nonce}.`
+    return `Withdrew ${all ? 'everything' : usd(amount) + ' ' + quoteName()} to ${short(owner)} with key #${nonce}.${fee > 0n ? ` ${usd(fee)} ${quoteName()} (${BURN_FEE_PCT}% of the gain) went to the buyback and burn.` : ''}`
   },
 
   async order() {
@@ -566,6 +572,22 @@ function onCrosshair(_time: number | null, _point: { x: number; y: number } | nu
 
 /* ---------------- views ---------------- */
 
+/** The buyback-and-burn share of a withdrawal of `amount`: 2% of the trading gain in it, only on a bunker that runs or ran an agent. */
+function burnFeeDue(amount: bigint): bigint {
+  const u = ui.chain.user
+  if (!u || !H.decodeAgentName(u.name)) return 0n
+  const net = u.spotPositions.find((s) => s.marketIndex === QUOTE)?.cumulativeDeposits ?? 0n
+  const base = amount < collateral() ? amount : collateral()
+  return H.burnFee(base, net)
+}
+/** The line under the withdraw fields. */
+function burnLine(): string {
+  const all = !f('withdraw').trim()
+  let amount = 0n
+  try { amount = all ? collateral() : parseUnits(f('withdraw') || '0', ui.chain.quote?.decimals ?? 6) } catch { amount = 0n }
+  const fee = amount > 0n ? burnFeeDue(amount) : 0n
+  return fee > 0n ? `Buyback and burn: ${BURN_FEE_PCT}% of the gain in this withdrawal, ${usd(fee)} ${quoteName()}, goes to the burn wallet in the same transaction.` : ''
+}
 const field = (name: string, label: string, attrs = '') =>
   `<label>${label}<input data-field="${name}" value="${esc(f(name))}" ${attrs} /></label>`
 
@@ -1012,6 +1034,7 @@ function drawer(): string {
       </dl>
       <div class="row">${field('deposit', `Deposit ${quoteName()} from the wallet`, 'inputmode="decimal"')}<button data-action="deposit">Deposit</button></div>
       <div class="row">${field('withdraw', `Withdraw ${quoteName()} (empty = all)`, 'inputmode="decimal"')}${field('to', 'To (empty = this wallet)', 'placeholder="owner address" autocomplete="off" spellcheck="false"')}</div>
+      <p class="dim small burn-line">${burnLine()}</p>
       <div class="row"><button class="ghost" data-action="withdraw" ${held > 0n && !blocked() ? '' : 'disabled'}>Sign with key #${b.nonce} &amp; withdraw</button></div>
     </section>` : ''}
   </aside>`
@@ -1063,6 +1086,7 @@ document.addEventListener('input', (e) => {
   if (!el.dataset?.field) return
   ui.form[el.dataset.field] = el.value
   if (el.dataset.field === 'prompt') { const n = document.querySelector('.dp-prompt .count'); if (n) n.textContent = `${el.value.length}/1500` }
+  if (el.dataset.field === 'withdraw') { const n = document.querySelector('.burn-line'); if (n) n.textContent = burnLine() }
   // the order preview follows the form without rebuilding the page under the cursor
   const pv = document.querySelector('.t-preview')
   if (pv) pv.outerHTML = previewHtml()

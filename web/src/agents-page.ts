@@ -7,6 +7,7 @@ import './style.css'
 import { wireLinks } from './links.ts'
 import { AGGR_LABEL, BASE_LABEL, FLAT_TEXT, ago, avatarHtml, duration, fetchFeed, metricsHtml, type Agent, type Custom, type Feed, type Hired, type Trade } from './agents.ts'
 import { AGENT_META } from './hire.ts'
+import { BURN_FEE_PCT, BURN_SHARE_PCT, BURN_WALLET } from './burn.ts'
 
 wireLinks()
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
@@ -57,6 +58,19 @@ function tradeRow(a: Agent, t: Trade): string {
   </tr>`
 }
 
+/** The buyback and burn: what left the agents' gains and the withdrawals, and what it became. */
+function burnHtml(feed: Feed): string {
+  const b = feed.burns
+  const usd = (x: number) => `$${x.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+  const mint = b?.mint || ''
+  const coin = mint ? `<a class="mono" href="https://solscan.io/token/${esc(mint)}" target="_blank" rel="noopener">${short(mint)}</a>` : `<span class="dim">set at launch</span>`
+  const rows = (b?.last ?? []).map((x) => `<tr><td>${esc(x.day)}</td><td>${n(x.usd)} USDT</td><td>${x.tokens.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td><td class="dim">${Object.entries(x.parts).filter(([, v]) => v > 0).map(([k, v]) => `${esc(k === 'fees' ? 'withdrawal fees' : AGENT_META[k]?.name ?? k)} ${n(v)}`).join(' · ')}</td><td>${x.txs.length ? `<a href="https://solscan.io/tx/${esc(x.txs[x.txs.length - 1])}" target="_blank" rel="noopener">tx</a>` : ''}</td></tr>`).join('')
+  return `<p class="eyebrow">Buyback and burn</p>
+    <div class="metrics"><div><b>${usd(b?.totalUsd ?? 0)}</b><span>burned, in USDT</span></div><div><b>${(b?.totalTokens ?? 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</b><span>coins burned</span></div><div><b>${b?.count ?? 0}</b><span>burns</span></div></div>
+    <p class="l-intro">Every day at 00:00 UTC, ${b?.sharePct ?? BURN_SHARE_PCT}% of what the three agents made in the last 24 hours leaves their bunkers, buys the coin on the open market and burns it. Every withdrawal from a bunker that runs or ran an agent sends ${b?.feePct ?? BURN_FEE_PCT}% of its trading gain to the same burn. Coin: ${coin} · burn wallet: <a class="mono" href="https://solscan.io/account/${BURN_WALLET}" target="_blank" rel="noopener">${short(BURN_WALLET)}</a>.</p>
+    ${rows ? `<table class="ag-trades"><thead><tr><th>Day</th><th>Spent</th><th>Burned</th><th>From</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : `<p class="dim">No burn yet: the first one runs at the first 00:00 UTC with a gain to burn.</p>`}`
+}
+
 /** Somebody's bunker with Ash on it. */
 function hiredRow(h: Hired): string {
   const a = AGENT_META[h.agent]
@@ -89,6 +103,7 @@ function render(feed: Feed) {
   const hired = feed.hired ?? [], custom = feed.custom ?? []
   document.getElementById('ag-hired')!.innerHTML = hired.length ? `<p class="eyebrow">On autopilot</p><div class="agents">${hired.map(hiredRow).join('')}</div>` : ''
   document.getElementById('ag-custom')!.innerHTML = custom.length ? `<p class="eyebrow">Community agents</p><div class="ag-grid">${custom.map(customCard).join('')}</div>` : ''
+  document.getElementById('ag-burn')!.innerHTML = burnHtml(feed)
   const start = feed.agents.reduce((s, a) => s + (a.startEquity ?? 0), 0)
   document.getElementById('ag-meta')!.innerHTML = `${feed.agents.length} agents · together <b class="${cls(total)}">${signed(total)} USDT</b>${start ? ` (${signed((total / start) * 100, 1)}%)` : ''} since the start · one decision each every ${feed.cadenceMinutes} minutes · updated ${ago(feed.updatedAt)}`
   document.getElementById('ag-cards')!.innerHTML = `<div class="ag-grid">${feed.agents.map(profile).join('')}</div>`
