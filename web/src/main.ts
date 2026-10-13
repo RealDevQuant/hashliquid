@@ -29,6 +29,8 @@ import { browserWalletSecret, connectBrowserWallet, connectPhantom, hasBrowserWa
 
 const V = H.V
 const RPC: string = import.meta.env.VITE_RPC_URL || 'http://127.0.0.1:8899'
+/** Opening a bunker and its trading account costs rent plus fees: the wallet needs this much SOL. */
+const OPEN_SOL = 0.05
 const NET = (import.meta.env.VITE_CLUSTER || 'localnet') as H.Network
 const QUOTE = V.QUOTE_SPOT_MARKET
 const conn = new Connection(RPC, 'confirmed')
@@ -165,6 +167,16 @@ async function send(ixs: TransactionInstruction[], cu?: number): Promise<string>
   tx.feePayer = wallet.publicKey
   const latest = await conn.getLatestBlockhash('confirmed')
   tx.recentBlockhash = latest.blockhash
+  // a dry run first: a transaction that would fail is explained here, before the wallet is asked to sign it
+  const dry = await conn.simulateTransaction(tx, undefined).catch(() => null)
+  if (dry?.value.err) {
+    const logs = dry.value.logs ?? []
+    const why = logs.map((l) => /Error Message: (.+)$/.exec(l)?.[1]).filter(Boolean).pop()
+    const err = JSON.stringify(dry.value.err)
+    if (/AccountNotFound/.test(err) || ui.chain.sol === 0) throw new Error(`The wallet ${short(wallet.publicKey)} has no SOL. It pays rent and fees: send it about ${OPEN_SOL} SOL first.`)
+    if (/insufficient (lamports|funds)/i.test(logs.join(' ')) || /InsufficientFunds/.test(err)) throw new Error(`The wallet ${short(wallet.publicKey)} holds ${ui.chain.sol.toFixed(4)} SOL: not enough for the rent and fees of this move (about ${OPEN_SOL} SOL).`)
+    throw new Error(why ? why.replace(/\.$/, '') + '.' : `This move would fail: ${err}`)
+  }
   const signed = await wallet.signTransaction(tx)
   const raw = signed.serialize()
   // the RPC simulates first: a move that would fail never gets published
@@ -593,8 +605,6 @@ function burnLine(): string {
 }
 /** The latest error, when it is fresh: shown under the button that caused it, not only in the Activity tab. */
 const errLine = (): string => (ui.log.length && ui.log[0].kind === 'err' && Date.now() - ui.log[0].at < 120_000 ? `<p class="gate-err">${esc(ui.log[0].text)}</p>` : '')
-/** Opening a bunker and its trading account costs rent plus fees: the wallet needs this much SOL. */
-const OPEN_SOL = 0.05
 const field = (name: string, label: string, attrs = '') =>
   `<label>${label}<input data-field="${name}" value="${esc(f(name))}" ${attrs} /></label>`
 
