@@ -11,6 +11,8 @@ export interface Wallet {
   signTransaction(tx: Transaction): Promise<Transaction>
   /** For transactions built elsewhere (a swap from the aggregator). */
   signVersioned(tx: VersionedTransaction): Promise<VersionedTransaction>
+  /** Phantom signs and sends in one go through its own pipeline (its simulation, its priority fee); returns the signature. */
+  signAndSend?(tx: Transaction): Promise<string>
   /** Created and kept in this browser. */
   local: boolean
 }
@@ -19,6 +21,7 @@ interface PhantomProvider {
   isPhantom?: boolean
   connect(opts?: { onlyIfTrusted: boolean }): Promise<{ publicKey: { toBytes(): Uint8Array } }>
   signTransaction<T extends Transaction | VersionedTransaction>(tx: T): Promise<T>
+  signAndSendTransaction<T extends Transaction | VersionedTransaction>(tx: T, opts?: { skipPreflight?: boolean; maxRetries?: number }): Promise<{ signature: string }>
 }
 const phantom = (): PhantomProvider | null => {
   const p = (window as unknown as { solana?: PhantomProvider }).solana
@@ -31,7 +34,7 @@ export async function connectPhantom(silent = false): Promise<Wallet> {
   const p = phantom()
   if (!p) throw new Error('Phantom is not installed.')
   const r = await p.connect(silent ? { onlyIfTrusted: true } : undefined)
-  return { name: 'Phantom', publicKey: new PublicKey(r.publicKey.toBytes()), signTransaction: (tx) => p.signTransaction(tx), signVersioned: (tx) => p.signTransaction(tx), local: false }
+  return { name: 'Phantom', publicKey: new PublicKey(r.publicKey.toBytes()), signTransaction: (tx) => p.signTransaction(tx), signVersioned: (tx) => p.signTransaction(tx), signAndSend: async (tx) => (await p.signAndSendTransaction(tx, { maxRetries: 2 })).signature, local: false }
 }
 
 const LOCAL_KEY = 'hashliquid:browser-wallet'

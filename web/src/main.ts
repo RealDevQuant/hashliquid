@@ -195,7 +195,8 @@ const assetChips = (name: string): string => { const v = f(name) || 'usdt'; retu
 
 async function send(ixs: TransactionInstruction[], cu?: number): Promise<string> {
   const wallet = ui.wallet!
-  const fee = NET === 'localnet' ? [] : [H.priorityFeeIx(Number(import.meta.env.VITE_PRIORITY_FEE ?? 5_000))]
+  // Phantom sets its own priority fee: ours would sit next to it. The compute limit stays: a signature needs it.
+  const fee = NET === 'localnet' || wallet.signAndSend ? [] : [H.priorityFeeIx(Number(import.meta.env.VITE_PRIORITY_FEE ?? 5_000))]
   const tx = new Transaction().add(...(cu ? [H.cuIx(cu)] : []), ...fee, ...ixs)
   tx.feePayer = wallet.publicKey
   // a finalized blockhash: every node, the wallet's included, already knows it (a fresh one from this RPC can be
@@ -213,10 +214,14 @@ async function send(ixs: TransactionInstruction[], cu?: number): Promise<string>
     if (/insufficient (lamports|funds)/i.test(logs.join(' ')) || /InsufficientFunds/.test(err)) throw new Error(`The wallet ${short(wallet.publicKey)} holds ${ui.chain.sol.toFixed(4)} SOL: not enough for the rent and fees of this move (about ${OPEN_SOL} SOL).`)
     throw new Error(why ? why.replace(/\.$/, '') + '.' : `This move would fail: ${err}`)
   }
-  const signed = await wallet.signTransaction(tx)
-  const raw = signed.serialize()
-  // the RPC simulates first: a move that would fail never gets published
-  const sig = await conn.sendRawTransaction(raw, { skipPreflight: false, maxRetries: 0 })
+  let sig: string, raw: Uint8Array | null = null
+  if (wallet.signAndSend) sig = await wallet.signAndSend(tx)   // Phantom: its popup, its simulation, its send
+  else {
+    const signed = await wallet.signTransaction(tx)
+    raw = signed.serialize()
+    // the RPC simulates first: a move that would fail never gets published
+    sig = await conn.sendRawTransaction(raw, { skipPreflight: false, maxRetries: 0 })
+  }
   const failed = async (err: unknown) => {
     const info = await conn.getTransaction(sig, { commitment: 'confirmed', maxSupportedTransactionVersion: 0 }).catch(() => null)
     const logs = info?.meta?.logMessages ?? []
@@ -239,7 +244,7 @@ async function send(ixs: TransactionInstruction[], cu?: number): Promise<string>
       }
       throw new Error('The network did not include the transaction in time. Nothing happened: try again.')
     }
-    await conn.sendRawTransaction(raw, { skipPreflight: true, maxRetries: 0 }).catch(() => {})
+    if (raw) await conn.sendRawTransaction(raw, { skipPreflight: true, maxRetries: 0 }).catch(() => {})
     await sleep(1500)
   }
 }
