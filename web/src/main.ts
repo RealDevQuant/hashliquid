@@ -615,7 +615,7 @@ function gate(): string {
 function marketsPanel(): string {
   return `<aside class="t-markets"><h2>Markets</h2>${ui.chain.markets.map((m) => `
     <button class="t-market ${m.index === ui.market ? 'on' : ''}" data-action="market" data-arg="${m.index}">
-      <span class="name"><img class="coin" src="/coins/${esc(m.coin.toLowerCase())}.png" alt="" width="18" height="18" />${esc(m.name)}</span>
+      <span class="name"><img class="coin" src="/coins/${esc(m.coin.toLowerCase())}.png" alt="" width="20" height="20" />${esc(m.name)}</span>
       <span class="px">${m.price ? price(m.price) : '–'}</span>
       <span class="chg ${m.change24h == null ? '' : m.change24h >= 0 ? 'pos' : 'neg'}">${m.change24h == null ? '' : pct(m.change24h)}</span>
     </button>`).join('')}</aside>`
