@@ -14,8 +14,8 @@
 */
 import './polyfill.ts'
 import { spotlight, buttons } from './fx.ts'
-import '@fontsource-variable/instrument-sans'
-import '@fontsource/instrument-serif/400-italic.css'
+import '@fontsource-variable/inter'
+import '@fontsource-variable/geist-mono'
 import './style.css'
 import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, type TransactionInstruction, VersionedTransaction } from '@solana/web3.js'
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'

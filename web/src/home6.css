@@ -1,0 +1,45 @@
+/*
+  The home, sixth cut: the Linear language. One sans at weight 510 with tight tracking, cold greys on near-black,
+  no gradients and no glow; a huge left-aligned title, the product in a dark frame at full width, monospace
+  figure labels. Flat and quiet; the type does the work.
+*/
+.n6 { --w: 1280px; position: relative; }
+.n6-wrap { width: min(var(--w), calc(100% - 64px)); margin: 0 auto; position: relative; }
+
+/* hero */
+.n6-hero { padding: calc(72px + clamp(64px, 12vh, 150px)) 0 0; }
+.n6-hero h1 { font-size: clamp(40px, 5.6vw, 72px); line-height: 1.02; letter-spacing: -0.025em; font-weight: 510; max-width: 14ch; color: var(--text); margin: 0; }
+.n6-hero h1 em { font-style: normal; color: var(--text-2); font-weight: 510; }
+.n6-sub { margin-top: 36px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+.n6-hero .l-lede { margin: 0; font-size: 17px; line-height: 1.5; color: var(--muted); max-width: 56ch; }
+.n6-new { display: inline-flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text-2); text-decoration: none; white-space: nowrap; }
+.n6-new b { font-weight: 510; color: var(--text); }
+.n6-new i { font-style: normal; transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.n6-new:hover i { transform: translateX(3px); }
+.n6-cta { margin-top: 28px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* the product, in a dark frame that fills the column; the top edge sits slightly back like a desk */
+.n6-stage { margin-top: clamp(40px, 7vh, 80px); position: relative; }
+.n6-frame { position: relative; margin: 0; padding: 10px; border-radius: 14px; background: #121316; border: 1px solid rgba(255, 255, 255, 0.07); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 40px 100px -40px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.05); transform: perspective(2200px) rotateX(var(--rx, 6deg)); transform-origin: 50% 100%; transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.n6-frame.flat { --rx: 0deg; }
+.n6-frame img { display: block; width: 100%; height: auto; border-radius: 7px; border: 1px solid rgba(255, 255, 255, 0.06); }
+.n6-frame::after { content: ''; position: absolute; inset: 10px; border-radius: 7px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 20%); pointer-events: none; }
+.n6-stage::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 38%; background: linear-gradient(180deg, transparent, var(--bg)); pointer-events: none; }
+
+/* the proof row: where the logos would be */
+.n6-proof { margin-top: clamp(48px, 8vh, 96px); padding: 0 0 clamp(48px, 8vh, 96px); border-bottom: 1px solid var(--line); }
+.n6-proof ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.n6-proof li { display: grid; gap: 6px; }
+.n6-proof b { font-weight: 510; font-size: 17px; color: var(--text); }
+.n6-proof span { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.n6-proof .cap { margin-top: 36px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+
+@media (max-width: 900px) { .n6-proof ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+  .n6-wrap { width: calc(100% - 32px); }
+  .n6-hero { padding-top: calc(64px + 48px); }
+  .n6-hero h1 { max-width: none; }
+  .n6-frame { padding: 5px; border-radius: 9px; --rx: 0deg; } .n6-frame img { border-radius: 5px; } .n6-frame::after { inset: 5px; }
+  .n6-proof ul { grid-template-columns: minmax(0, 1fr); }
+  .n6-cta .btn { width: 100%; }
+}

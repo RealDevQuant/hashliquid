@@ -1,9 +1,9 @@
 // The landing and the docs are plain HTML. This brings in the two typefaces, the shared stylesheet and the outside links,
 // and on the home it fills the agents' cards with their live numbers from the public feed.
-import '@fontsource-variable/instrument-sans'
-import '@fontsource/instrument-serif/400-italic.css'
+import '@fontsource-variable/inter'
+import '@fontsource-variable/geist-mono'
 import './style.css'
-import './home.css'
+import './home6.css'
 import { wireLinks } from './links.ts'
 import { all as fx } from './fx.ts'
 import { FLAT_TEXT, ago, avatarHtml, fetchFeed, metricsHtml } from './agents.ts'
@@ -14,12 +14,13 @@ wireLinks()
 {
   const q = new URLSearchParams(location.search).get('intro')
   const home = location.pathname === '/' || location.pathname.endsWith('/index.html')
+  // once per browser: the first visit sees the door, every visit after lands on the page (?intro=1 brings it back)
   let seen = false
-  try { seen = sessionStorage.getItem('hashliquid:entered') === '1' } catch { /* private mode */ }
+  try { seen = localStorage.getItem('hashliquid:entered') === '1' || sessionStorage.getItem('hashliquid:entered') === '1' } catch { /* private mode */ }
   if (home && q !== '0' && (q === '1' || !seen)) {
     // while the door is closed the hero holds its entrance: the words, the light and the reveals wait for it
     document.documentElement.classList.add('intro-wait')
-    void import('./intro.ts').then(({ showIntro }) => showIntro()).then(() => { try { sessionStorage.setItem('hashliquid:entered', '1') } catch { /* ignore */ } }).finally(() => document.documentElement.classList.remove('intro-wait'))
+    void import('./intro.ts').then(({ showIntro }) => showIntro()).then(() => { try { localStorage.setItem('hashliquid:entered', '1'); sessionStorage.setItem('hashliquid:entered', '1') } catch { /* ignore */ } }).finally(() => document.documentElement.classList.remove('intro-wait'))
   }
 }
 fx()
@@ -55,7 +56,9 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
 
 // the home's motion and the floating nav
 {
-  void import('./nav.ts').then((m) => m.all())
-  const dust = document.querySelector<HTMLCanvasElement>('.z-dust'), dev = document.querySelector<HTMLElement>('.z-device'), keys = document.querySelector<HTMLElement>('.z-keys')
-  if (dust || dev || keys) void import('./home.ts').then((m) => { if (dust) m.dust(dust); if (dev) m.device(dev); if (keys) m.keys(keys) })
+  const frame = document.querySelector<HTMLElement>('.n6-frame')
+  if (frame && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const place = () => { const r = frame.getBoundingClientRect(); frame.classList.toggle('flat', r.top < innerHeight * 0.45) }
+    addEventListener('scroll', place, { passive: true }); addEventListener('resize', place); place()
+  }
 }
