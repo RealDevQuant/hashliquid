@@ -363,8 +363,10 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
       amount = await swapSolToUsdt(lamports)
       swapped = `Swapped ${(Number(lamports) / 1e9).toFixed(4)} SOL for ${usd(amount)} ${quoteName()} and d`
     } else {
-      amount = parseUnits(f('deposit'), ui.chain.quote!.decimals)
-      if (amount > ui.chain.tokens) throw new Error(`The wallet holds ${usd(ui.chain.tokens)} ${quoteName()}.`)
+      amount = f('deposit').trim() ? parseUnits(f('deposit'), ui.chain.quote!.decimals) : ui.chain.tokens   // empty = everything the wallet holds
+      if (amount > ui.chain.tokens && amount - ui.chain.tokens <= 10_000n) amount = ui.chain.tokens   // a rounding hair over the balance: all of it
+      if (amount > ui.chain.tokens) throw new Error(`The wallet holds ${(Number(ui.chain.tokens) / 1e6).toFixed(4)} ${quoteName()}.`)
+      if (amount <= 0n) throw new Error('How much?')
     }
     ui.busy = `Depositing ${usd(amount)} ${quoteName()}…`; render()
     const to = H.bunkerTokenAccount(bunker, mint)
@@ -1153,7 +1155,7 @@ function drawer(): string {
         <div><dt>Collateral</dt><dd>${usd(held)} ${quoteName()}</dd></div>
       </dl>
       ${assetChips('depositAsset')}
-      <div class="row">${field('deposit', (f('depositAsset') || 'usdt') === 'sol' ? `Deposit SOL from the wallet (swapped to ${quoteName()} first, two signatures)` : `Deposit ${quoteName()} from the wallet`, 'inputmode="decimal"')}<button data-action="deposit">Deposit</button></div>
+      <div class="row">${field('deposit', (f('depositAsset') || 'usdt') === 'sol' ? `Deposit SOL from the wallet (swapped to ${quoteName()} first, two signatures)` : `Deposit ${quoteName()} from the wallet (empty = all)`, 'inputmode="decimal"')}<button data-action="deposit">Deposit</button></div>
       <div class="row">${field('withdraw', `Withdraw ${quoteName()} (empty = all)`, 'inputmode="decimal"')}${field('to', 'To (empty = this wallet)', 'placeholder="owner address" autocomplete="off" spellcheck="false"')}</div>
       <p class="dim small burn-line">${burnLine()}</p>
       <div class="row"><button class="ghost" data-action="withdraw" ${held > 0n && !blocked() ? '' : 'disabled'}>Sign with key #${b.nonce} &amp; withdraw</button></div>
