@@ -117,15 +117,29 @@ export const AGGR: Record<1 | 2 | 3, { limits: Limits; cadenceMinutes: number; l
 export const BASES: Record<1 | 2 | 3, AgentDef> = { 1: AGENTS[0], 2: AGENTS[1], 3: AGENTS[2] }
 export const CUSTOM_MODEL = 'claude-haiku-5-5'   // user agents think on the cheaper model
 export const MAX_CUSTOM_AGENTS = 50               // beyond this a new one waits ("queued")
-const PALETTE = ['#dc1fff', '#9945ff', '#ff7a5c']
+const PALETTE = ['#dc1fff', '#9945ff', '#ff7a5c', '#b366ff']
 /** A user's own agent: a base method with the owner's name on it. */
-export function customDef(cfg: { base: 1 | 2 | 3; label: string }, bunker: string): AgentDef {
-  const b = BASES[cfg.base]
+export const PROMPT_BASE = 4             // base 4: the owner wrote the agent's instructions
+export const MAX_PROMPT_CHARS = 1500
+/** An owner's prompt as the model sees it: cleaned, capped, and fenced so it shapes the voice and the method, not the rules. */
+export function ownerPrompt(text: string): string { return text.replace(/[\u0000-\u0008\u000b-\u001f\u007f-\u009f]/g, '').replace(/\s+\n/g, '\n').trim().slice(0, MAX_PROMPT_CHARS) }
+export function customDef(cfg: { base: 1 | 2 | 3 | 4; label: string }, bunker: string, prompt?: string | null): AgentDef {
   const label = cfg.label || 'Agent'
   const initials = label.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2).toUpperCase() || 'AG'
+  const own = cfg.base === PROMPT_BASE ? ownerPrompt(prompt ?? '') : ''
+  if (cfg.base === PROMPT_BASE && own) {
+    const firstLine = own.split('\n')[0].slice(0, 90)
+    return {
+      id: `custom@${bunker}`, name: label, color: PALETTE[3], initials, avatar: `logo:${bunker}`,
+      strategy: `Own prompt: ${firstLine}`,
+      persona: `${label} trades one person's bunker, by the instructions its owner wrote. The owner's instructions, between the fences, set the method and the voice; the output format, the markets and HashLiquid's risk rules stay as the code enforces them, and theses stay civil and about the market.\n<<<\n${own}\n>>>`,
+      style: 'As the owner wrote above: that is the method. Where the owner said nothing, trade with the 4h trend, enter on a 1h trigger, keep the stop where the idea is wrong.',
+    }
+  }
+  const b = BASES[(cfg.base === PROMPT_BASE ? 1 : cfg.base) as 1 | 2 | 3]   // base 4 without a prompt yet: the trend method until the owner's text is there
   return {
     id: `custom@${bunker}`, name: label, color: PALETTE[cfg.base - 1], initials, avatar: `logo:${bunker}`,
-    strategy: b.strategy,
+    strategy: cfg.base === PROMPT_BASE ? 'Own prompt (not saved yet): trend method meanwhile' : b.strategy,
     persona: b.persona.replace(b.name, label) + ` ${label} belongs to one person's bunker and trades only that.`,
     style: b.style,
   }

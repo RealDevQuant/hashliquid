@@ -11,7 +11,7 @@ export const AGENT_TAG = 'HL1'
 export const NAME_BYTES = 32
 export const MAX_LABEL_BYTES = NAME_BYTES - (AGENT_TAG.length + 1 + 3 + 1)   // 24
 
-export type Base = 1 | 2 | 3            // 1 trend · 2 mean reversion · 3 momentum
+export type Base = 1 | 2 | 3 | 4        // 1 trend · 2 mean reversion · 3 momentum · 4 the owner's own prompt (kept off chain under the bunker's address)
 export type Aggr = 1 | 2 | 3            // 1 careful · 2 standard · 3 all in
 export interface AgentConfig { kind: 'hired' | 'custom'; base: Base; aggr: Aggr; label: string }
 
@@ -39,7 +39,7 @@ export function encodeAgentName(c: AgentConfig): Uint8Array {
 export function decodeAgentName(bytes: Uint8Array): AgentConfig | null {
   let text: string
   try { text = dec.decode(bytes).replace(/\0+$/, '').trimEnd() } catch { return null }
-  const m = /^HL1 ([HC])([123])([123])(?: (.*))?$/.exec(text)
+  const m = /^HL1 ([HC])([1234])([123])(?: (.*))?$/.exec(text)
   if (!m) return null
   return { kind: m[1] === 'H' ? 'hired' : 'custom', base: Number(m[2]) as Base, aggr: Number(m[3]) as Aggr, label: sanitizeLabel(m[4] ?? '') }
 }

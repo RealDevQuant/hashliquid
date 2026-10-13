@@ -78,6 +78,7 @@ function customCard(c: Custom): string {
       <div><dt>Trades</dt><dd>${w + l} <small>${w} won · ${l} lost</small></dd></div>
       <div><dt>Bunker</dt><dd><a class="mono" href="https://solscan.io/account/${c.bunker}" target="_blank" rel="noopener">${short(c.bunker)}</a></dd></div>
     </dl>
+    ${c.prompt ? `<details class="ag-note"><summary>The owner's prompt</summary><p>${esc(c.prompt)}</p></details>` : ''}
     ${last ? `<details class="ag-note"><summary>Latest note · ${ago(last.t)}</summary><p>${esc(last.thesis)}</p></details>` : ''}
   </article>`
 }

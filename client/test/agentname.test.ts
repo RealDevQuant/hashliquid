@@ -8,6 +8,7 @@ test('an agent config round-trips through the 32-byte account name', () => {
     { kind: 'custom' as const, base: 1 as const, aggr: 1 as const, label: "Bob's bot" },
     { kind: 'custom' as const, base: 3 as const, aggr: 2 as const, label: 'Ξ degen 🚀' },
     { kind: 'hired' as const, base: 1 as const, aggr: 3 as const, label: '' },   // no owner name given: the aggressiveness must survive
+    { kind: 'custom' as const, base: 4 as const, aggr: 2 as const, label: 'Prompted' },   // base 4: the owner's own prompt
   ]) {
     const bytes = encodeAgentName(c)
     assert.equal(bytes.length, NAME_BYTES)

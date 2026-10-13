@@ -254,6 +254,12 @@ test('deploy: create your own agent from the page, in four steps', { skip: missi
     await shot('1-choose')
     await click('[data-action="pick"][data-arg="custom"]')
     await type('agentName', "Bob's bot")
+    // the fourth strategy opens the prompt box; a look at it, then back to the second
+    await click('[data-action="base"][data-arg="4"]')
+    await page.waitForSelector('textarea[data-field="prompt"]', { timeout: 10_000 })
+    await page.type('textarea[data-field="prompt"]', 'Trade SOL only. Long on a 1h close above the 4h EMA20 with rising volume, short the mirror image. Stop under the last swing, take profit at 2R, never add to a loser.')
+    assert.match(await text('.dp-prompt .count'), /^1[0-9]{2}\/1500/)
+    if (SHOTS) await page.screenshot({ path: `${SHOTS}/deploy-2b-prompt.png`, fullPage: true })
     await click('[data-action="base"][data-arg="2"]')
     await click('[data-action="aggr"][data-arg="2"]')
     await type('fund', '120')

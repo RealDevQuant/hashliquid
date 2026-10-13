@@ -62,7 +62,7 @@ const ui = {
   /** The agent a link asked to hire (?hire=ash2): its row is marked. */
   hirePick: new URLSearchParams(location.search).get('hire') ?? '',
   /** The deploy wizard's choices. */
-  deploy: { choice: (knownAgent(QUERY.get('hire')) ? 'hire' : QUERY.get('create') ? 'custom' : '') as '' | 'hire' | 'custom', agent: knownAgent(QUERY.get('hire')) ? QUERY.get('hire')! : 'ash1', base: 1 as 1 | 2 | 3, aggr: 1 as 1 | 2 | 3, logo: null as File | null, done: '' },
+  deploy: { choice: (knownAgent(QUERY.get('hire')) ? 'hire' : QUERY.get('create') ? 'custom' : '') as '' | 'hire' | 'custom', agent: knownAgent(QUERY.get('hire')) ? QUERY.get('hire')! : 'ash1', base: 1 as 1 | 2 | 3 | 4, aggr: 1 as 1 | 2 | 3, logo: null as File | null, done: '' },
   showSecret: false,
   busy: '',
   log: [] as { kind: 'ok' | 'err'; text: string; at: number }[],
@@ -335,7 +335,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
   // ---- the deploy wizard ----
   async pick(arg) { const [choice, agent] = (arg ?? '').split(':'); ui.deploy.choice = choice as '' | 'hire' | 'custom'; if (agent) ui.deploy.agent = agent },
   async aggr(n) { ui.deploy.aggr = Number(n) as 1 | 2 | 3 },
-  async base(n) { ui.deploy.base = Number(n) as 1 | 2 | 3 },
+  async base(n) { ui.deploy.base = Number(n) as 1 | 2 | 3 | 4 },
   /** Everything in one go: the bunker and its account (named after the agent), the deposit, the agent switched on. */
   async deployGo() {
     const d = ui.deploy
@@ -343,7 +343,9 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     if (d.choice === 'custom' && d.logo && (d.logo.size > 300 * 1024 || !['image/png', 'image/jpeg', 'image/webp'].includes(d.logo.type))) throw new Error('The logo must be a png, jpg or webp of at most 300 KB.')
     const label = H.sanitizeLabel(f(d.choice === 'hire' ? 'ownerName' : 'agentName'))
     if (d.choice === 'custom' && !label) throw new Error('Give your agent a name.')
-    const base = (d.choice === 'hire' ? Number(d.agent.replace('ash', '')) : d.base) as 1 | 2 | 3
+    const base = (d.choice === 'hire' ? Number(d.agent.replace('ash', '')) : d.base) as 1 | 2 | 3 | 4
+    const prompt = f('prompt').trim()
+    if (d.choice === 'custom' && base === 4 && !prompt) throw new Error('Write the prompt your agent will trade by.')
     const cfg = { kind: d.choice === 'hire' ? 'hired' as const : 'custom' as const, base, aggr: d.aggr, label }
     const nameBytes = H.encodeAgentName(cfg)
     const delegate = new PublicKey(d.choice === 'hire' ? DELEGATES[d.agent] : CUSTOM_DELEGATE)
@@ -361,6 +363,12 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
       ui.busy = 'Naming the agent…'; render()
       await act(V.updateUserNameIx({ authority: k.address, name: nameBytes }), 'agent name')
       await refresh()
+    }
+    // the owner's prompt (base 4): not on chain; saved once under the bunker's address, now that the account's name says the agent runs on it
+    if (d.choice === 'custom' && base === 4) {
+      ui.busy = 'Saving the prompt…'; render()
+      const r = await fetch(`/api/prompt?bunker=${k.address.toBase58()}`, { method: 'POST', headers: { 'content-type': 'text/plain; charset=utf-8' }, body: prompt }).catch(() => null)
+      if (!r || (!r.ok && r.status !== 409)) throw new Error(`The prompt was not saved${r ? `: ${(await r.json().catch(() => ({}))).error ?? r.status}` : ''}. Nothing else was signed: press again.`)
     }
     // the logo, if any: not on chain; saved under the bunker's address as soon as the account carries the agent's name
     let logoNote = ''
@@ -929,10 +937,11 @@ function deployView(): string {
       ? `<ol class="words">${ui.fresh.split(' ').map((w) => `<li>${w}</li>`).join('')}</ol><p class="note">Write them down now. They are the bunker.</p><div class="row"><button data-action="confirmWords">I wrote them down</button></div>`
       : `<p class="dim">A bunker has no private key. Its 24 words derive one-time keys: each signs once.</p><div class="row"><button data-action="newWords">Generate 24 words</button></div><div class="row">${field('words', 'Or the words of a bunker you already have', 'placeholder="word1 word2 …" autocomplete="off" spellcheck="false"')}<button class="ghost" data-action="importWords">Use these words</button></div>`
   // 3 choose: who, or what, trades the bunker
-  const STRATEGIES: [1 | 2 | 3, string, string][] = [
+  const STRATEGIES: [1 | 2 | 3 | 4, string, string][] = [
     [1, 'Trend following', 'Rides the 4h direction: buys pullbacks in an uptrend, sells bounces in a downtrend, and lets winners run behind a trailing stop.'],
     [2, 'Mean reversion', 'Fades stretched moves: enters when price runs too far from its average or the crowd piles onto one side, and takes profit as it comes back.'],
     [3, 'Momentum', 'Breakouts with volume behind them: enters as a level gives way, keeps a tight stop and trails the winner.'],
+    [4, 'Write your own', 'Your instructions, in your words: what it trades, how it enters and exits, how it talks. The risk limits you pick still apply.'],
   ]
   const LEVELS: [1 | 2 | 3, string, string, string, string][] = [
     [1, 'Careful', '10% of equity a trade', 'No leverage', 'Decides every hour'],
@@ -947,13 +956,14 @@ function deployView(): string {
     const a = AGENT_META[id], live = ui.live.feed?.agents.find((x) => x.id === id), [what, how] = a.strategy.split(/:\s*/)
     return `<button class="dp-opt ${choice === 'hire' && d.agent === id ? 'on' : ''}" data-action="pick" data-arg="hire:${id}" style="--c:${a.color}">${face(id, 'avatar lg')}<b>${esc(a.name)}</b><span class="dp-strat">${esc(what)}</span><p>${esc(how ?? '')}</p>${live?.allTimePct != null ? `<small class="${live.allTimePct >= 0 ? 'pos' : 'neg'}">${live.allTimePct >= 0 ? '+' : ''}${live.allTimePct.toFixed(1)}% all time</small>` : ''}</button>`
   }).join('')
-  const strategyCards = STRATEGIES.map(([v, t, why]) => `<button class="dp-opt ${d.base === v ? 'on' : ''}" data-action="base" data-arg="${v}" style="--c:${AGENT_META['ash' + v].color}"><b>${t}</b><p>${why}</p><small>${face('ash' + v, 'avatar xs')} ${AGENT_META['ash' + v].name}'s method</small></button>`).join('')
+  const strategyCards = STRATEGIES.map(([v, t, why]) => `<button class="dp-opt ${d.base === v ? 'on' : ''}" data-action="base" data-arg="${v}" style="--c:${v === 4 ? '#b366ff' : AGENT_META['ash' + v].color}"><b>${t}</b><p>${why}</p><small>${v === 4 ? 'Your own prompt' : `${face('ash' + v, 'avatar xs')} ${AGENT_META['ash' + v].name}'s method`}</small></button>`).join('')
+  const promptBox = `<label class="dp-prompt">Your trading prompt<textarea data-field="prompt" rows="8" maxlength="1500" placeholder="Example: Trade SOL only. Go long on a 1h close above the 4h EMA20 with rising volume, short the mirror image. Keep the stop under the last swing, take profit at 2R, never add to a loser. Talk like a calm desk trader.">${esc(f('prompt'))}</textarea><span class="dim small"><span class="count">${f('prompt').length}/1500</span> · Saved once, under your bunker's address. The aggressiveness you pick below still applies: the code enforces it whatever the prompt says.</span></label>`
   const levelCards = LEVELS.map(([v, t, ...specs]) => `<button class="dp-opt ${d.aggr === v ? 'on' : ''}" data-action="aggr" data-arg="${v}"><b>${t}</b><ul class="dp-spec">${specs.map((x) => `<li>${x}</li>`).join('')}</ul></button>`).join('')
   const s3 = `${tabs}
     ${choice === 'hire'
       ? `<h3 class="dp-h">Who trades for you</h3><div class="dp-grid3">${agentCards}</div><div class="row">${field('ownerName', 'Your name on the chart (optional)', 'maxlength="24" placeholder="Bob"')}</div>`
       : `<div class="dp-identity">${field('agentName', 'Name, as it appears on the chart', 'maxlength="24" placeholder="Bob\'s bot"')}<label class="dp-file">Logo (png, jpg or webp, up to 300 KB)<input type="file" data-logo accept="image/png,image/jpeg,image/webp" />${d.logo ? `<span class="dim small">${esc(d.logo.name)}</span>` : ''}</label></div>
-         <h3 class="dp-h">Pick a trading strategy</h3><div class="dp-grid3">${strategyCards}</div>`}
+         <h3 class="dp-h">Pick a trading strategy</h3><div class="dp-grid4">${strategyCards}</div>${d.base === 4 ? promptBox : ''}`}
     <h3 class="dp-h">How hard it trades</h3><div class="dp-grid3">${levelCards}</div>`
   // 4 fund + go
   const enough = Number(f('fund') || 0) + Number(collateral()) / 1e6 >= MIN_HIRE_USDT
@@ -1037,7 +1047,7 @@ function render() {
     drawDepth()
   }
   if (focused) {
-    const el = app.querySelector<HTMLInputElement>(`input[data-field="${focused}"]`)
+    const el = app.querySelector<HTMLInputElement>(`input[data-field="${focused}"], textarea[data-field="${focused}"]`)
     if (el) { el.focus(); if (caret !== null) el.setSelectionRange(caret, caret) }
   }
 }
@@ -1052,6 +1062,7 @@ document.addEventListener('input', (e) => {
   const el = e.target as HTMLInputElement
   if (!el.dataset?.field) return
   ui.form[el.dataset.field] = el.value
+  if (el.dataset.field === 'prompt') { const n = document.querySelector('.dp-prompt .count'); if (n) n.textContent = `${el.value.length}/1500` }
   // the order preview follows the form without rebuilding the page under the cursor
   const pv = document.querySelector('.t-preview')
   if (pv) pv.outerHTML = previewHtml()
@@ -1077,7 +1088,7 @@ async function start() {
       const m = current()
       if (chart && m?.price && chart.coin === m.coin) chart.tick(Number(m.price) / 1e6)
       // numbers refresh in the background; the page isn't rebuilt under someone who is typing
-      if (!ui.busy && !(document.activeElement instanceof HTMLInputElement) && !document.querySelector('#chart-slot:hover')) render()
+      if (!ui.busy && !(document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) && !document.querySelector('#chart-slot:hover')) render()
     } catch { /* next tick */ }
   }, 6000)
   setInterval(() => { if (!document.hidden) void loadChanges() }, 180_000)

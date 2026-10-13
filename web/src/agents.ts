@@ -26,6 +26,7 @@ export interface Custom {
   bunker: string; label: string; base: number; aggr: number; color: string; initials: string; strategy: string
   equity: number; startEquity: number; allTimePnl: number; positions: Position[]; trades: Trade[]; wins: number; losses: number
   lastThesis: string | null; lastAt: number | null; moves: Move[]; queued: boolean
+  prompt?: string | null
 }
 export interface Metrics { agentsDeployed: number; hiredBunkers: number; customAgents: number; positionsOpen: number; tradesTotal: number; volumeUsd: number; aum: number }
 export interface Feed { updatedAt: number; cadenceMinutes: number; agents: Agent[]; hired?: Hired[]; custom?: Custom[]; metrics?: Metrics }
@@ -64,7 +65,7 @@ export function chartTrades(feed: Feed, market: string): { agent: ChartWho; trad
   return out
 }
 export const AGGR_LABEL: Record<number, string> = { 1: 'careful', 2: 'standard', 3: 'all in' }
-export const BASE_LABEL: Record<number, string> = { 1: 'trend', 2: 'mean reversion', 3: 'momentum' }
+export const BASE_LABEL: Record<number, string> = { 1: 'trend', 2: 'mean reversion', 3: 'momentum', 4: 'own prompt' }
 /** The metrics strip the pages share. */
 export function metricsHtml(m: Metrics | undefined): string {
   if (!m) return ''

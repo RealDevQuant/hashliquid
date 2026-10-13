@@ -690,3 +690,11 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 @media (max-width: 520px) { #app .dp-step button:not(.chip):not(.dp-opt):not(.dp-tab):not(.sm) { width: 100%; } }
 /* a bubble or exit dot outside the loaded candles is hidden for real */
 #app .chart-bubbles [hidden] { display: none; }
+
+/* the fourth strategy: the owner's own prompt */
+.dp-grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.dp-step .dp-prompt { display: grid; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--muted); }
+.dp-step .dp-prompt textarea { width: 100%; resize: vertical; min-height: 160px; color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: 14px 16px; font: inherit; font-size: 16px; line-height: 1.5; }
+.dp-step .dp-prompt textarea:focus { outline: none; border-color: var(--accent); }
+@media (max-width: 1100px) { .dp-grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .dp-grid4 { grid-template-columns: 1fr; } }

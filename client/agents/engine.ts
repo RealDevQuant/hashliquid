@@ -13,11 +13,11 @@
 */
 import { PublicKey, type Keypair, type TransactionInstruction } from '@solana/web3.js'
 import * as H from '../src/index.ts'
-import { AGENTS, AGGR, CLIENT, CUSTOM_MODEL, LAUNCH_GAP_MINUTES, LAUNCH_ROUNDS, LIMITS, MAX_CUSTOM_AGENTS, MIN_CLIENT_EQUITY, OFFSETS, customDef, type AgentDef, type Limits } from './config.ts'
+import { AGENTS, AGGR, CLIENT, CUSTOM_MODEL, PROMPT_BASE, ownerPrompt, LAUNCH_GAP_MINUTES, LAUNCH_ROUNDS, LIMITS, MAX_CUSTOM_AGENTS, MIN_CLIENT_EQUITY, OFFSETS, customDef, type AgentDef, type Limits } from './config.ts'
 import { V, conn, payer, agentChain, act, clearPending, account, emptyAccount, marketOrderIx, cancelIdsIx, clientsOf, customAgents, customDelegate, delegateOf, send, log, solBalance, sleep, type AgentChain, type Account, type Client } from './chain.ts'
 import { markets as readMarkets, forModel, type MarketData } from './data.ts'
 import { decide, type Decision } from './brain.ts'
-import { counters, logClientMove, logMove, publishFeed, readClientMoves, readClients, readMoves, readPlans, saveCounters, savePlan, type ClientEntry, type Counters, type Feed, type FeedAgent, type FeedCustom, type FeedHired, type FeedMetrics, type FeedTrade, type Move, type Plan } from './store.ts'
+import { counters, logClientMove, logMove, publishFeed, readClientMoves, readClients, readMoves, readPlans, saveCounters, savePlan, type ClientEntry, type Counters, type Feed, type FeedAgent, type FeedCustom, type FeedHired, type FeedMetrics, type FeedTrade, type Move, type Plan, readPrompt } from './store.ts'
 
 /** `dry`: decide and log, sign nothing. Set by the command line. */
 export const flags = { dry: false }
@@ -40,7 +40,9 @@ export const houseBook = (def: AgentDef): Book => { const a = agentChain(def); r
 /** Somebody's bunker that hired `def`: the aggressiveness its owner chose sets the limits (careful when unsaid). */
 export const clientBook = (def: AgentDef, bunker: PublicKey, cfg: ClientEntry['cfg'] = null): Book => ({ id: `${def.id}@${bunker.toBase58()}`, def, authority: bunker, house: null, delegate: delegateOf(def), limits: cfg ? AGGR[cfg.aggr].limits : CLIENT, cfg })
 /** A user's own agent on their bunker. */
-export const customBook = (c: Client): Book => { const cfg = c.cfg ?? { kind: 'custom' as const, base: 1 as const, aggr: 1 as const, label: 'Agent' }; return { id: `custom@${c.bunker.toBase58()}`, def: customDef(cfg, c.bunker.toBase58()), authority: c.bunker, house: null, delegate: customDelegate(), limits: AGGR[cfg.aggr].limits, cfg } }
+export const customBook = (c: Client, prompt?: string | null): Book => { const cfg = c.cfg ?? { kind: 'custom' as const, base: 1 as const, aggr: 1 as const, label: 'Agent' }; return { id: `custom@${c.bunker.toBase58()}`, def: customDef(cfg, c.bunker.toBase58(), prompt), authority: c.bunker, house: null, delegate: customDelegate(), limits: AGGR[cfg.aggr].limits, cfg } }
+/** The book with the owner's prompt loaded when the agent runs on one (base 4). */
+const customBookWithPrompt = async (c: Client): Promise<Book> => customBook(c, c.cfg?.base === PROMPT_BASE ? await readPrompt(c.bunker.toBase58()) : null)
 const tag = (b: Book) => (b.house ? b.def.id : `${b.def.id}→${b.authority.toBase58().slice(0, 4)}…`)
 const snapshot = async (b: Book, c: Ctx): Promise<Account> => { const u = await V.getUser(conn, b.authority); return u ? account(u, c.quote, c.names, c.oracles) : emptyAccount() }
 const record = (b: Book, m: Move) => { if (flags.dry) return; if (b.house) logMove(m); else logClientMove(b.id, m) }
@@ -301,7 +303,7 @@ const CUSTOM_PER_PASS = 6
 /** The custom agents whose turn it is (by the cadence of their aggressiveness), each on the cheaper model. */
 export async function customCycle(c: Ctx): Promise<number> {
   const all = (await customAgents()).slice(0, MAX_CUSTOM_AGENTS)   // the rest is queued: shown on the site, not run
-  const due = all.map(customBook)
+  const due = (await Promise.all(all.map(customBookWithPrompt)))
     .filter((b) => Date.now() - (customDecided.get(b.id) ?? 0) >= AGGR[b.cfg!.aggr].cadenceMinutes * 60_000)
     .sort((x, y) => (customDecided.get(x.id) ?? 0) - (customDecided.get(y.id) ?? 0))
     .slice(0, CUSTOM_PER_PASS)   // a pass stays short, so the guard keeps its cadence; the others go next pass
@@ -531,7 +533,7 @@ async function feedHired(def: AgentDef, cl: Client, c: Ctx): Promise<FeedHired> 
   return { agent: def.id, bunker: cl.bunker.toBase58(), label: cl.cfg?.label ?? '', aggr: cl.cfg?.aggr ?? 1, equity: acct.equity, positions: mine.map(({ marketIndex: _i, ...p }) => ({ ...p, stop: plans[p.market]?.stop, target: plans[p.market]?.target ?? null })), trades: tradesFrom(readClientMoves(b.id, 500), mine).slice(0, 20) }
 }
 async function feedCustom(cl: Client, queued: boolean, c: Ctx): Promise<FeedCustom> {
-  const b = customBook(cl)
+  const b = await customBookWithPrompt(cl)
   const acct = await snapshot(b, c)
   if (!acct.user || !acct.user.delegate.equals(b.delegate!.publicKey)) throw new Error('switched off')   // the listing can be minutes old: the chain decides
   const cnt = counters(b.id, acct.equity, acct.pnl)
@@ -547,6 +549,7 @@ async function feedCustom(cl: Client, queued: boolean, c: Ctx): Promise<FeedCust
     equity: acct.equity, startEquity: start, allTimePnl: r2(acct.equity - start), positions: mine.map(({ marketIndex: _i, ...p }) => ({ ...p, stop: plans[p.market]?.stop, target: plans[p.market]?.target ?? null })),
     trades: trades.slice(0, 20), wins: closed.filter((t) => t.pnl! > 0).length, losses: closed.filter((t) => t.pnl! <= 0).length,
     lastThesis: last?.thesis ?? null, lastAt: last?.t ?? null, moves: moves.slice(-20), queued,
+    prompt: cl.cfg?.base === PROMPT_BASE ? ownerPrompt((await readPrompt(cl.bunker.toBase58())) ?? '') || null : null,
   }
 }
 export async function publish(c: Ctx): Promise<void> {

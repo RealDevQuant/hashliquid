@@ -46,7 +46,7 @@ function parseLines(text: string, limit: number): Move[] { const out: Move[] = [
 export function logClientMove(book: string, m: Move): void { appendFileSync(new URL(`clients/${book.replace('@', '.')}.jsonl`, dataDir), JSON.stringify(m) + '\n') }
 
 /** The bunkers seen last per delegate (an agent's hired bunkers, or every custom agent under 'custom'): what the service falls back on when the chain can't be listed. */
-export interface ClientEntry { bunker: string; cfg: { kind: 'hired' | 'custom'; base: 1 | 2 | 3; aggr: 1 | 2 | 3; label: string } | null; since?: number }   // since = first seen, unix seconds
+export interface ClientEntry { bunker: string; cfg: { kind: 'hired' | 'custom'; base: 1 | 2 | 3 | 4; aggr: 1 | 2 | 3; label: string } | null; since?: number }   // since = first seen, unix seconds
 const clientsFile = new URL('clients.json', dataDir)
 export const readClients = (): Record<string, { t: number; bunkers: ClientEntry[] }> => (existsSync(clientsFile) ? JSON.parse(readFileSync(clientsFile, 'utf8')) : {})
 export function saveClients(key: string, bunkers: ClientEntry[]): void { const all = readClients(); all[key] = { t: Math.floor(Date.now() / 1000), bunkers }; writeAtomic(clientsFile, JSON.stringify(all, null, 1)) }
@@ -128,6 +128,7 @@ export interface FeedCustom {
   bunker: string; label: string; base: number; aggr: number; color: string; initials: string; strategy: string
   equity: number; startEquity: number; allTimePnl: number; positions: FeedPosition[]; trades: FeedTrade[]; wins: number; losses: number
   lastThesis: string | null; lastAt: number | null; moves: Move[]; queued: boolean
+  prompt?: string | null   // base 4: the owner's own instructions, as published
 }
 export interface FeedMetrics { agentsDeployed: number; hiredBunkers: number; customAgents: number; positionsOpen: number; tradesTotal: number; volumeUsd: number; aum: number }
 export interface Feed { updatedAt: number; cadenceMinutes: number; agents: FeedAgent[]; hired: FeedHired[]; custom: FeedCustom[]; metrics: FeedMetrics }
@@ -139,6 +140,19 @@ const token = (): string => {
   const m = /BLOB_READ_WRITE_TOKEN="?([^"\n]+)"?/.exec(readFileSync(f, 'utf8'))
   if (!m) throw new Error('no BLOB_READ_WRITE_TOKEN in .secrets/agents/blob.env')
   return m[1]
+}
+
+/** The public store's base URL (the feed, the logos and the owners' prompts live there). */
+export const BLOB_BASE = process.env.BLOB_BASE ?? 'https://f5hdtinpoqngxkbv.public.blob.vercel-storage.com'
+const promptCache = new Map<string, { t: number; text: string | null }>()
+/** The prompt an owner wrote for a base-4 agent (web/api/prompt.ts saved it under prompts/<bunker>), or null; cached ten minutes. */
+export async function readPrompt(bunker: string): Promise<string | null> {
+  const hit = promptCache.get(bunker)
+  if (hit && Date.now() - hit.t < 600_000) return hit.text
+  let text: string | null = null
+  try { const r = await fetch(`${BLOB_BASE}/prompts/${bunker}`); if (r.ok) text = (await r.text()).slice(0, 2000) } catch { /* not readable now */ }
+  if (text !== null || !hit) promptCache.set(bunker, { t: Date.now(), text })
+  return text ?? hit?.text ?? null
 }
 
 /** Writes the feed to the public store. Returns its URL. */
