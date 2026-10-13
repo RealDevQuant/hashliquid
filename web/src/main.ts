@@ -200,8 +200,9 @@ async function send(ixs: TransactionInstruction[], cu?: number): Promise<string>
   const latest = await conn.getLatestBlockhash('confirmed')
   tx.recentBlockhash = latest.blockhash
   // a dry run first: a transaction that would fail is explained here, before the wallet is asked to sign it
-  const dry = await conn.simulateTransaction(tx, undefined).catch(() => null)
-  if (dry?.value.err) {
+  // simulated with the node's own latest blockhash: the public RPC's nodes don't all know ours yet
+  const dry = await conn.simulateTransaction(new VersionedTransaction(tx.compileMessage()), { replaceRecentBlockhash: true, sigVerify: false }).catch(() => null)
+  if (dry?.value.err && !/BlockhashNotFound/.test(JSON.stringify(dry.value.err))) {
     const logs = dry.value.logs ?? []
     const why = logs.map((l) => /Error Message: (.+)$/.exec(l)?.[1]).filter(Boolean).pop()
     const err = JSON.stringify(dry.value.err)
