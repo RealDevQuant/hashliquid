@@ -729,3 +729,7 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 
 /* the market's mark next to its name above the chart */
 .t-strip .sym { display: inline-flex; align-items: center; gap: 10px; }
+
+/* long addresses in the docs wrap instead of pushing the page sideways */
+.docs a.mono, .docs code, .docs .mono { overflow-wrap: anywhere; }
+@media (max-width: 520px) { .l-foot .foot-mark { font-size: 10.5vw; } }

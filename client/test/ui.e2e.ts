@@ -95,7 +95,8 @@ test('a bunker from the page: deposit, order, cancel, withdraw', { skip: missing
     assert.deepEqual(await page.evaluate(fontsInUse), ['Space Grotesk Variable'], 'one typeface on the whole page')
     assert.ok(await page.$eval('.nav .brand img', (img: HTMLImageElement) => img.complete && img.naturalWidth > 0), 'the logo shows in the app header')
 
-    // buy 1 SOL-PERP: signed with key #0. Nobody is selling on this validator, so it rests.
+    // buy 1 SOL-PERP: signed with key #0. Nobody is selling on this validator, so it rests. (BTC is the first market shown: pick SOL.)
+    await click('[data-action="market"][data-arg="0"]'); await idle()
     await type('size', '1')
     await shot('2-ready')
     await click('[data-action="order"]')

@@ -589,6 +589,10 @@ function burnLine(): string {
   const fee = amount > 0n ? burnFeeDue(amount) : 0n
   return fee > 0n ? `Buyback and burn: ${BURN_FEE_PCT}% of the gain in this withdrawal, ${usd(fee)} ${quoteName()}, goes to the burn wallet in the same transaction.` : ''
 }
+/** The latest error, when it is fresh: shown under the button that caused it, not only in the Activity tab. */
+const errLine = (): string => (ui.log.length && ui.log[0].kind === 'err' && Date.now() - ui.log[0].at < 120_000 ? `<p class="gate-err">${esc(ui.log[0].text)}</p>` : '')
+/** Opening a bunker and its trading account costs rent plus fees: the wallet needs this much SOL. */
+const OPEN_SOL = 0.05
 const field = (name: string, label: string, attrs = '') =>
   `<label>${label}<input data-field="${name}" value="${esc(f(name))}" ${attrs} /></label>`
 
@@ -805,13 +809,15 @@ function orderPanel(): string {
       <p class="dim">A bunker has no private key. Its 24 words derive one-time keys: each signs once and names the next.</p>
       <div class="row"><button data-action="newWords">Generate 24 words</button></div>
       <div class="row">${field('words', 'Or enter the words of a bunker you already have', 'placeholder="word1 word2 …" autocomplete="off" spellcheck="false"')}</div>
-      <div class="row"><button class="ghost" data-action="importWords">Use these words</button></div></section>`
+      <div class="row"><button class="ghost" data-action="importWords">Use these words</button></div>${errLine()}</section>`
   }
   if (!ui.chain.bunker || !ui.chain.user) {
+    const lowSol = NET !== 'localnet' && ui.chain.sol < OPEN_SOL
     return `<section class="t-order"><h2>Step 3 · Bunker</h2>
       <dl><div><dt>Address</dt><dd class="small" id="bunker-address">${keys().address.toBase58()}</dd></div></dl>
       <p class="dim">Opens the bunker and its trading account. The account belongs to the bunker, not to your wallet.</p>
-      <div class="row"><button data-action="createBunker">Create bunker</button></div></section>`
+      <p class="dim small">The wallet pays the rent of the two accounts and the fees: about ${OPEN_SOL} SOL. It holds ${ui.chain.sol.toFixed(4)} SOL.${lowSol ? ` <b class="neg">Send at least ${OPEN_SOL} SOL to ${esc(ui.wallet!.publicKey.toBase58())} first.</b>` : ''}</p>
+      <div class="row"><button data-action="createBunker" ${lowSol || ui.busy ? 'disabled' : ''}>Create bunker</button></div>${errLine()}</section>`
   }
   const b = ui.chain.bunker
   const held = collateral()
