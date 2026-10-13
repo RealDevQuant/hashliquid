@@ -37,3 +37,12 @@ async function liveCards() {
   }
 }
 void liveCards()
+
+// the page reveals as it comes into view, once the vault intro is out of the way
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const els = Array.from(document.querySelectorAll<HTMLElement>('.l-hero h1, .l-hero .l-lede, .l-hero .l-cta, .l-hero .l-proof, .l-hero figure, .l-hero picture, .l-sec .wrap > *, .l-specs > div'))
+  els.forEach((el, i) => { el.classList.add('reveal'); el.style.setProperty('--i', String(i % 5)) })
+  const io = new IntersectionObserver((entries) => { for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }, { threshold: 0.1 })
+  const start = () => { if (document.querySelector('.intro')) { setTimeout(start, 200); return } els.forEach((el) => io.observe(el)) }
+  start()
+}
