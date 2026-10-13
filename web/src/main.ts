@@ -219,13 +219,20 @@ async function send(ixs: TransactionInstruction[], cu?: number): Promise<string>
     const why = logs.map((l) => /Error Message: (.+)$/.exec(l)?.[1]).filter(Boolean).pop()
     throw new Error(why ? why.replace(/\.$/, '') + '.' : `Transaction failed: ${JSON.stringify(err)}`)
   }
+  // the public RPC's block height and statuses can disagree for a while: a transaction is given up only after the
+  // blockhash is past its window AND a good minute has gone by AND the history says nothing landed
+  const started = Date.now()
   for (;;) {
-    const st = (await conn.getSignatureStatuses([sig])).value[0]
+    const st = (await conn.getSignatureStatuses([sig], { searchTransactionHistory: true })).value[0]
     if (st?.err) await failed(st.err)
     if (st && (st.confirmationStatus === 'confirmed' || st.confirmationStatus === 'finalized')) return sig
-    if ((await conn.getBlockHeight('confirmed')) > latest.lastValidBlockHeight) {
-      const info = await conn.getTransaction(sig, { commitment: 'confirmed', maxSupportedTransactionVersion: 0 }).catch(() => null)
-      if (info) { if (info.meta?.err) await failed(info.meta.err); return sig }
+    const height = await conn.getBlockHeight('confirmed').catch(() => 0)
+    if (height > latest.lastValidBlockHeight && Date.now() - started > 60_000) {
+      for (let i = 0; i < 5; i++) {
+        const info = await conn.getTransaction(sig, { commitment: 'confirmed', maxSupportedTransactionVersion: 0 }).catch(() => null)
+        if (info) { if (info.meta?.err) await failed(info.meta.err); return sig }
+        await sleep(2000)
+      }
       throw new Error('The network did not include the transaction in time. Nothing happened: try again.')
     }
     await conn.sendRawTransaction(raw, { skipPreflight: true, maxRetries: 0 }).catch(() => {})
