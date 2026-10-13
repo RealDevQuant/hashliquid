@@ -766,3 +766,226 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 .acct-addr { padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); }
 .drawer section { display: grid; gap: 10px; }
 .drawer section h2 { font-size: 13px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+/* =====================================================================================================
+   LIGHTER LANGUAGE (14/10/26): frames, mono, uppercase, flat. One font: Geist Mono. Applies to every page.
+   ===================================================================================================== */
+:root {
+  --font: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --bg: #0a0a10; --surface: #0e0e16; --surface-2: #12121c;
+  --line: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.2);
+  --text: rgba(255, 255, 255, 0.92); --muted: rgba(255, 255, 255, 0.55); --faint: rgba(255, 255, 255, 0.35);
+  --accent: #c3b4ff; --accent-2: #9945ff; --accent-ink: #0a0a10;
+  --grad: linear-gradient(0deg, var(--accent), var(--accent));
+  --radius: 2px; --radius-sm: 1px;
+}
+html { background: var(--bg); }
+body { font-family: var(--font); font-size: 14px; line-height: 1.6; letter-spacing: 0; }
+h1, h2, h3, h4, .eyebrow, .btn, #app button, .chip, .pill, .badge, .dp-h, .dp-bar li, .nav-links a, th, dt, .t-stat span, .l-proof, .metrics span { text-transform: uppercase; }
+h1, h2, h3 { font-weight: 500; letter-spacing: 0.01em; }
+h2 { font-size: clamp(20px, 2.2vw, 28px); line-height: 1.25; }
+h3 { font-size: 13px; letter-spacing: 0.08em; }
+em { font-style: normal; color: var(--accent); }
+.eyebrow { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); }
+.eyebrow::before { content: '[ '; } .eyebrow::after { content: ' ]'; }
+a { color: var(--text); }
+
+/* buttons: rectangles, small caps, no lift */
+.btn, #app button { border-radius: 1px; font-size: 12px; font-weight: 500; letter-spacing: 0.08em; padding: 12px 18px; background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+.btn:hover, #app button:hover:not(:disabled), .btn:active, #app button:active:not(:disabled) { transform: none; box-shadow: none; filter: none; background: #d6ccff; border-color: #d6ccff; }
+.btn.ghost, #app button.ghost { background: transparent; color: var(--text); border-color: var(--line-strong); }
+.btn.ghost:hover, #app button.ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); border-color: var(--text); }
+.btn.lg { font-size: 12px; padding: 14px 22px; }
+.btn.wide { width: 100%; text-align: center; padding: 18px; font-size: 13px; }
+#app button.sm, .btn.sm { padding: 8px 12px; font-size: 11px; }
+#app button.long { background: var(--long); border-color: var(--long); color: var(--accent-ink); } #app button.short { background: var(--short); border-color: var(--short); color: var(--accent-ink); }
+
+/* frames: a panel inside a panel, the way the reference builds everything */
+.frame { border: 1px solid var(--line); padding: 6px; background: rgba(255, 255, 255, 0.015); position: relative; }
+.frame::before, .frame::after { content: ''; position: absolute; width: 6px; height: 6px; border: 1px solid var(--line-strong); }
+.frame::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; } .frame::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+.frame-in { border: 1px solid var(--line); background: var(--surface); padding: clamp(18px, 2.4vw, 32px); }
+
+/* the nav: cells */
+.nav { border-bottom: 1px solid var(--line); background: var(--bg); }
+.nav-in { padding: 0 16px; min-height: 56px; gap: 0; }
+.brand { font-size: 12px; letter-spacing: 0.2em; gap: 10px; padding-right: 18px; }
+.brand img { width: 22px; height: 22px; }
+.brand span { background: none; -webkit-text-fill-color: initial; color: var(--accent); }
+.nav-links { display: flex; margin-left: auto; margin-right: 14px; }
+.nav-links a { font-size: 11px; letter-spacing: 0.12em; color: var(--muted); padding: 20px 16px; border-left: 1px solid var(--line); text-decoration: none; }
+.nav-links a:last-of-type { border-right: 1px solid var(--line); }
+.nav-links a:hover { color: var(--text); background: rgba(255, 255, 255, 0.03); }
+.nav .btn { padding: 10px 16px; }
+
+/* the landing */
+.lf { background: var(--bg) linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 112px, linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 112px 100%; background-blend-mode: normal; }
+.lf-col { width: min(760px, calc(100% - 32px)); margin: 0 auto; display: grid; gap: 10px; }
+.lf-col.wide { width: min(1240px, calc(100% - 32px)); }
+.lf-hero { padding: clamp(48px, 9vh, 120px) 0 clamp(40px, 7vh, 90px); }
+.lf-title { text-align: center; padding: clamp(28px, 4vw, 48px) 20px; }
+.lf-title h1 { display: grid; gap: 10px; justify-items: center; margin: 0; }
+.lf-h1a { font-size: clamp(22px, 3vw, 40px); font-weight: 400; letter-spacing: 0.02em; color: var(--muted); }
+.lf-h1b { font-size: clamp(44px, 7vw, 92px); font-weight: 500; letter-spacing: -0.02em; line-height: 1; color: var(--text); border: 1px solid var(--line); padding: 6px 28px; background: var(--bg); }
+.lf-sub { text-align: center; }
+.lf-sub .l-lede { margin: 0; font-size: clamp(12px, 1.05vw, 15px); line-height: 1.7; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); max-width: 46em; margin-inline: auto; }
+.lf-sub .l-lede b { color: var(--text); font-weight: 500; }
+.lf-cta { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
+.lf-cta .btn { flex: 1 1 0; max-width: 260px; text-align: center; }
+.l-proof { justify-content: center; font-size: 11px; letter-spacing: 0.12em; color: var(--faint); margin-top: 18px; }
+.l-proof span::before { width: 6px; height: 6px; border-radius: 0; background: var(--accent); }
+.lf-band { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; width: min(1240px, calc(100% - 32px)); margin: 0 auto clamp(40px, 7vh, 90px); }
+.lf-panel { border: 1px solid var(--line); background: var(--surface); padding: 18px; min-height: 220px; display: grid; gap: 10px; align-content: start; position: relative; }
+.lf-panel::after { content: ''; position: absolute; left: 18px; right: 18px; bottom: 10px; height: 4px; background: repeating-linear-gradient(90deg, var(--line) 0 2px, transparent 2px 5px); }
+.lf-panel h3 { color: var(--text); }
+.lf-panel p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.lf-sec { padding: 0 0 clamp(32px, 5vh, 56px); }
+.lf-head { display: grid; gap: 10px; margin-bottom: 14px; }
+.lf-head h2 { max-width: 30em; }
+.l-intro { font-size: 13px; line-height: 1.7; color: var(--muted); max-width: 60em; margin: 0 0 18px; }
+.lf-agents { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 6px 0 14px; }
+.lf-agent { display: grid; grid-template-columns: 48px minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: center; padding: 16px 18px; background: var(--bg); }
+.lf-agent .avatar { width: 44px; height: 44px; border-radius: 50%; font-size: 12px; }
+.lf-agent h3 { font-size: 13px; margin-bottom: 6px; color: var(--c, var(--text)); }
+.lf-agent p { font-size: 12.5px; line-height: 1.55; color: var(--muted); margin: 0; }
+.lf-agent .live { font-size: 12.5px; color: var(--text); border-left: 1px solid var(--line); padding-left: 18px; }
+.lf-agent .live b { font-weight: 500; }
+.metrics { gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 0; margin: 14px 0; }
+.metrics > div { background: var(--bg); padding: 14px 16px; }
+.metrics b { font-size: clamp(18px, 1.8vw, 24px); font-weight: 500; letter-spacing: 0; background: none; -webkit-text-fill-color: initial; color: var(--text); }
+.metrics span { font-size: 10px; letter-spacing: 0.12em; color: var(--muted); }
+.lf-shotbox .l-shot { margin: 6px 0 0; border: 1px solid var(--line); background: var(--bg); padding: 6px; }
+.lf-shotbox .l-shot img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+.lf-table { border: 1px solid var(--line); background: var(--line); display: grid; gap: 1px; margin-top: 6px; }
+.lf-table [role='row'] { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 1px; background: var(--line); }
+.lf-table [role='row'] > * { background: var(--bg); padding: 14px 16px; font-size: 12.5px; line-height: 1.5; color: var(--muted); border: 0; min-width: 0; }
+.lf-table [role='columnheader'] { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+.lf-table [role='rowheader'] { color: var(--text); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.lf-table .ours { color: var(--text); background: rgba(195, 180, 255, 0.06); }
+.lf-steps { list-style: none; display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 6px; }
+.lf-steps li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 16px; padding: 16px 18px; background: var(--bg); align-items: start; }
+.lf-steps .n { font-size: 12px; letter-spacing: 0.1em; color: var(--accent); padding-top: 2px; }
+.lf-steps h3 { font-size: 13px; margin-bottom: 6px; }
+.lf-steps p { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin: 0; }
+.lf-last { padding-bottom: clamp(40px, 7vh, 90px); }
+.lf-bigcta { padding: 14px; }
+.lf-foot { margin: 0; padding: 0 0 40px; border-top: 0; overflow: visible; }
+.lf-foot .frame-in { display: grid; gap: 28px; }
+.lf-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 22px; }
+.lf-links a { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); text-decoration: none; }
+.lf-links a:hover { color: var(--accent); }
+.lf-social { justify-content: center; gap: 40px; }
+.lf-mark { display: grid; place-items: center; padding: 20px 0; }
+.lf-mark img { width: 96px; height: 96px; opacity: 0.9; image-rendering: pixelated; }
+.lf-footline { display: flex; align-items: center; gap: 14px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+.lf-rule { flex: 1; height: 1px; background: var(--line); }
+.reveal { transform: none; }
+@media (max-width: 900px) { .lf-band { grid-template-columns: repeat(2, minmax(0, 1fr)); } .lf-agent { grid-template-columns: 44px minmax(0, 1fr); } .lf-agent .live { grid-column: 2; border-left: 0; padding-left: 0; } .nav-links a { padding: 18px 10px; } }
+@media (max-width: 600px) { .lf-band { grid-template-columns: 1fr; } .lf-table [role='row'] { grid-template-columns: 1fr; } .lf-cta { flex-direction: column; } .lf-cta .btn { max-width: none; } .nav-links { display: none; } }
+
+/* the rest of the site in the same language */
+.l-card, .ag-card, .dp-step, .dp-card, .gate-card, .drawer, .acct-card, .dp-summary, .t-order, .docs-callout, .ag-note, .dp-done { border-radius: 1px; }
+#app .dp-opt, #app .dp-tab, #app .dp-agent, .dp-bar li, .t-market, #app .t-market, .chip, .pill, .badge, input, textarea, .avatar.sm, .t-preview, .metrics > div { border-radius: 1px !important; }
+.avatar, .lf-agent .avatar, #app .chart-bubbles .bubble, .coin, .face { border-radius: 50% !important; }
+.l-foot .foot-mark { -webkit-text-stroke: 1px var(--line-strong); color: transparent; background: none; }
+.docs-toc a { text-transform: uppercase; font-size: 11px; letter-spacing: 0.1em; }
+.intro-line { background: none; -webkit-text-fill-color: initial; color: var(--text); text-transform: uppercase; letter-spacing: 0.12em; font-size: clamp(16px, 2vw, 26px); font-weight: 500; filter: none; }
+/* sizes the older rules were still winning */
+.lf-sec h2, .lf-head h2, .l-sec .lf-head h2, .l-meet .l-meet-h, .lf-sec .l-meet-h { font-size: clamp(18px, 1.9vw, 26px); line-height: 1.3; letter-spacing: 0.01em; font-weight: 500; }
+.l-sec .l-intro, .lf-sec .l-intro, .l-meet .l-intro { font-size: 13px; line-height: 1.7; color: var(--muted); max-width: 60em; margin: 0 0 18px; }
+.l-foot .lf-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 22px; }
+.l-foot .lf-links a { font-size: 11px; }
+.l-compare.lf-table .ours, .lf-table [role='row'] > .ours { background: rgba(195, 180, 255, 0.07); color: var(--text); }
+.l-compare.lf-table [role='row'] > * { padding: 14px 16px; font-size: 12.5px; }
+.lf-agent .avatar { width: 44px; height: 44px; }
+/* headings across the pages, at the reference's scale */
+h1 { font-size: clamp(24px, 2.8vw, 36px); line-height: 1.2; letter-spacing: 0.01em; }
+.lf-title h1 { font-size: inherit; }
+.docs h2 { font-size: 20px; } .docs h3 { font-size: 13px; letter-spacing: 0.08em; }
+.docs-head p, .ag-hero p, .dp-head .l-lede, .gate-card > p { font-size: 14px; }
+.ag-card { border-top: 1px solid var(--line) !important; }
+.metrics { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.ag-card h2 { font-size: 15px; } .ag-nums dd { font-size: 18px; }
+.ag-meta { font-size: 12px; }
+/* the terminal in the same language: small, dense, labels in caps, values plain */
+#app { font-size: 12px; }
+input, textarea, .book, .tape, .t-bottom td, #log, .t-order dd, .drawer dd, .t-stat b, .t-market .px, .t-market .chg, .t-market .name, .sym { text-transform: none; }
+.t-center > *, .t-side > *, .t-order > *, .t-chart > * { min-width: 0; }
+.t-bottom { overflow-x: auto; }
+.t-markets { padding: 8px 6px; }
+.t-markets h2 { font-size: 10px; letter-spacing: 0.14em; padding: 8px 10px 10px; }
+#app .t-market { grid-template-columns: 18px minmax(0, 1fr) auto; gap: 0 8px; padding: 9px 10px; font-size: 12px; border-radius: 1px; }
+.t-market .px { font-size: 12px; font-weight: 500; } .t-market .chg { font-size: 10.5px; }
+.t-strip { gap: 6px 22px; padding: 10px 16px; }
+.t-stat { white-space: nowrap; }
+.t-stat span { font-size: 10px; letter-spacing: 0.1em; }
+.t-stat b { font-size: 12.5px; font-weight: 500; }
+.t-stat.big span { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+.t-stat.big b { font-size: 22px; letter-spacing: -0.01em; }
+.t-stat b small { font-size: 10.5px; }
+.t-chart-bar { padding: 6px 10px; gap: 1px; }
+#app .t-chart-bar .iv { font-size: 10.5px; padding: 5px 8px; letter-spacing: 0.08em; }
+.t-chart-bar .ind, .t-chart-bar label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+.t-bottom .tabs { padding: 4px 8px; }
+#app .t-bottom .tab { font-size: 10.5px; letter-spacing: 0.1em; padding: 8px 10px; }
+#app .t-bottom .tab.on { background: transparent; border-bottom: 1px solid var(--accent); }
+.t-bottom table { font-size: 12px; }
+.t-bottom th, .t-bottom td { padding: 9px 12px; }
+.t-bottom th { font-size: 10px; letter-spacing: 0.1em; }
+.t-bottom > p { padding: 16px 12px; font-size: 12px; }
+#log { font-size: 12px; } #log .at { font-size: 10.5px; }
+.t-side-head { padding: 8px 12px; } .t-side-head h2 { font-size: 10px; }
+.book, .tape { font-size: 11.5px; }
+.book-head { font-size: 10px; } .book .mid { font-size: 12.5px; padding: 5px 12px; }
+.book-head, .lvl { padding: 2px 10px; gap: 6px; }
+.t-order { padding: 14px; gap: 12px; }
+.t-order h2 { font-size: 10px; letter-spacing: 0.14em; }
+.t-acct dt { font-size: 10px; letter-spacing: 0.1em; } .t-acct dd { font-size: 15px; font-weight: 500; }
+.t-acct { gap: 6px 10px; padding-bottom: 12px; }
+#app .side button { font-size: 11px; padding: 11px 10px; }
+#app .t-type button { font-size: 10.5px; letter-spacing: 0.1em; padding: 6px 8px; }
+#app .t-type button.on { border-bottom: 1px solid var(--accent); }
+.t-order label, .drawer label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; gap: 5px; }
+.t-order input, .drawer input, .gate-more input { font-size: 13px; padding: 9px 10px; border-radius: 1px; letter-spacing: 0; }
+.t-check { font-size: 11px; letter-spacing: 0.04em; text-transform: none; }
+.t-preview { gap: 8px; } .t-preview dt { font-size: 10px; letter-spacing: 0.1em; } .t-preview dd { font-size: 13px; font-weight: 500; }
+.t-order dt, .drawer dt { font-size: 10px; letter-spacing: 0.1em; } .t-order dd, .drawer dd { font-size: 14px; }
+.t-order dd.small, .drawer dd.small { font-size: 11.5px; }
+#app .wide, #app button.wide { font-size: 11.5px; letter-spacing: 0.08em; padding: 13px 12px; white-space: normal; line-height: 1.4; }
+.t-lev-head { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; gap: 10px; }
+.t-lev-head span { font-size: 10.5px; } .t-lev-val { font-size: 13px; white-space: nowrap; flex: none; }
+#app .t-lev-chips .chip { padding: 5px 8px; font-size: 10.5px; border-radius: 1px; letter-spacing: 0.06em; }
+#app .chip, .chip { border-radius: 1px; font-size: 10.5px; letter-spacing: 0.06em; }
+.t-order .words li { font-size: 11.5px; border-radius: 1px; padding: 5px 8px; }
+.note { font-size: 11.5px; }
+.dim, .small { font-size: 11.5px; }
+.hire-row { font-size: 11.5px; } .hire-row b { font-size: 12px; }
+.agent-row { font-size: 11.5px; padding: 10px 12px; } .agent-row .who b { font-size: 12px; }
+.chart-tip { font-size: 11.5px; border-radius: 1px; }
+.drawer { border-radius: 1px; padding: 16px 18px 24px; gap: 14px; }
+.drawer-head h2 { font-size: 13px; letter-spacing: 0.1em; }
+.drawer section h2 { font-size: 10px; letter-spacing: 0.14em; }
+.drawer p { font-size: 11.5px; }
+.acct-card { border-radius: 1px; }
+.acct-card h3, .acct-card b.ttl { font-size: 11px; }
+.nav-note { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.nav-note b { letter-spacing: 0; text-transform: none; }
+#busy { border-radius: 1px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+.gate-card { border-radius: 1px; } .gate-card h1 { font-size: 16px; } .gate-card > p { font-size: 12px; }
+.gate-more label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; } .gate-err { font-size: 12px; }
+@media (max-width: 1180px) { .t-markets { flex-wrap: nowrap; overflow-x: auto; } }
+@media (max-width: 760px) { .t-strip { gap: 6px 16px; padding: 10px 12px; } .t-stat.big b { font-size: 20px; } }
+/* the footer every page shares (the big mark peeking from below), in the same language */
+.l-foot { margin-top: 0; padding-top: 48px; border-top: 1px solid var(--line); }
+.l-foot nav h4 { font-size: 10px; letter-spacing: 0.14em; font-weight: 500; }
+.l-foot nav a { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+.l-foot nav a:hover { color: var(--accent); }
+.l-foot .foot-brand .fine, .l-foot .foot-bottom .fine { font-size: 11.5px; color: var(--muted); }
+.l-foot .foot-mark { font-weight: 500; letter-spacing: 0.04em; }
+/* page titles at the reference's scale, whatever the older page rules said */
+.ag-hero h1, .dp-head h1, .docs-body h1, .l-meet h1, .dp-done h1, .l-hero .l-h1 { font-size: clamp(24px, 2.8vw, 36px); font-weight: 500; letter-spacing: 0.01em; line-height: 1.25; margin-top: 10px; }
+.metrics { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+@media (max-width: 1000px) { .metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ag-hero .l-lede, .dp-head .l-lede { max-width: 60em; }
+@media (max-width: 600px) { .metrics > div:last-child:nth-child(odd) { grid-column: span 2; } }

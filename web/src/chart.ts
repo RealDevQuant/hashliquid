@@ -80,6 +80,7 @@ export class MarketChart {
     this.up = v('--long'); this.down = v('--short')
     this.chart = createChart(el, {
       autoSize: true,
+      localization: { locale: 'en-US' },
       layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: v('--muted'), fontFamily: v('--font'), fontSize: 12, attributionLogo: false },
       grid: { vertLines: { color: v('--line') }, horzLines: { color: v('--line') } },
       rightPriceScale: { borderColor: v('--line-strong'), scaleMargins: { top: 0.06, bottom: 0.2 } },

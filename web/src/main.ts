@@ -13,7 +13,7 @@
   Orders are filled by the exchange's keepers.
 */
 import './polyfill.ts'
-import '@fontsource-variable/space-grotesk'
+import '@fontsource-variable/geist-mono'
 import './style.css'
 import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, type TransactionInstruction, VersionedTransaction } from '@solana/web3.js'
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'

@@ -1,6 +1,6 @@
 // The landing and the docs are plain HTML. This brings in the one font, the shared stylesheet and the outside links,
 // and on the home it fills the agents' cards with their live numbers from the public feed.
-import '@fontsource-variable/space-grotesk'
+import '@fontsource-variable/geist-mono'
 import './style.css'
 import { wireLinks } from './links.ts'
 import { FLAT_TEXT, ago, avatarHtml, fetchFeed, metricsHtml } from './agents.ts'

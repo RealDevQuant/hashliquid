@@ -92,7 +92,7 @@ test('a bunker from the page: deposit, order, cancel, withdraw', { skip: missing
     await idle()
     await closeDrawer()
     assert.equal(await text('#collateral'), '500.00 USDT', await lastLog())
-    assert.deepEqual(await page.evaluate(fontsInUse), ['Space Grotesk Variable'], 'one typeface on the whole page')
+    assert.deepEqual(await page.evaluate(fontsInUse), ['Geist Mono Variable'], 'one typeface on the whole page')
     assert.ok(await page.$eval('.nav .brand img', (img: HTMLImageElement) => img.complete && img.naturalWidth > 0), 'the logo shows in the app header')
 
     // buy 1 SOL-PERP: signed with key #0. Nobody is selling on this validator, so it rests. (BTC is the first market shown: pick SOL.)
@@ -171,11 +171,11 @@ test('the landing page: one typeface, nothing overflowing, and it leads to the a
     page.on('console', (m: { type(): string; text(): string }) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`) })
     await page.goto(`${BASE}/?intro=0`, { waitUntil: 'networkidle0' })
     await page.evaluate(() => document.fonts.ready)
-    assert.equal(await page.$eval('h1', (e: Element) => e.textContent?.trim()), 'Trade perps in bunker mode.')
-    assert.match(await page.$eval('.l-meet-h', (e: Element) => e.textContent?.trim() ?? ''), /^Meet Ash One, Ash Two and Ash Three/)
-    assert.deepEqual(await page.evaluate(fontsInUse), ['Space Grotesk Variable'], 'one typeface on the whole page')
+    assert.equal(await page.$eval('h1', (e: Element) => e.textContent?.trim()), 'TradePerpsIn bunker mode')
+    assert.match(await page.$eval('.l-meet-h', (e: Element) => e.textContent?.trim() ?? ''), /^Three traders\. Three bunkers\./)
+    assert.deepEqual(await page.evaluate(fontsInUse), ['Geist Mono Variable'], 'one typeface on the whole page')
     // the logo is in the header and in the footer, and the site has its icons
-    const logos: boolean[] = await page.$$eval('.brand img', (imgs: HTMLImageElement[]) => imgs.map((img) => img.complete && img.naturalWidth > 0))
+    const logos: boolean[] = await page.$$eval('.brand img, .lf-mark img', (imgs: HTMLImageElement[]) => imgs.map((img) => img.complete && img.naturalWidth > 0))
     assert.ok(logos.length >= 2 && logos.every(Boolean), `the logo loads wherever it appears (${logos.length} places)`)
     for (const href of await page.$$eval('link[rel~="icon"], link[rel="apple-touch-icon"]', (ls: HTMLLinkElement[]) => ls.map((l) => l.href))) {
       assert.equal((await fetch(href)).status, 200, `site icon ${href}`)
@@ -194,15 +194,15 @@ test('the landing page: one typeface, nothing overflowing, and it leads to the a
     const text: string = await page.evaluate(() => document.body.innerText)
     assert.ok(!/velocity/i.test(text), 'the exchange is not named')
     if (SHOTS) await page.screenshot({ path: `${SHOTS}/landing-desktop.png`, fullPage: true })
-    // full width: the hero's content box spans the viewport minus the gutters, not a fixed 1120px
-    const heroWidth = await page.$eval('.l-hero-in', (e: Element) => e.getBoundingClientRect().width)
-    assert.ok(heroWidth > 1300, `hero spans ${heroWidth}px of 1440`)
+    // the wide sections fill the page: their frame spans the viewport minus the gutters, not a fixed 1120px
+    const wide = await page.$eval('.lf-col.wide', (e: Element) => e.getBoundingClientRect().width)
+    assert.ok(wide > 1200, `the wide frame spans ${wide}px of 1440`)
 
     // the docs page: same font, every section linked from its table of contents, the exchange not named
     await page.goto(`${BASE}/docs.html`, { waitUntil: 'networkidle0' })
     await page.evaluate(() => document.fonts.ready)
     assert.equal(await page.$eval('h1', (e: Element) => e.textContent?.trim()), 'HashLiquid')
-    assert.deepEqual(await page.evaluate(fontsInUse), ['Space Grotesk Variable'], 'one typeface on the docs')
+    assert.deepEqual(await page.evaluate(fontsInUse), ['Geist Mono Variable'], 'one typeface on the docs')
     const toc = await page.$$eval('.docs-toc a', (as: HTMLAnchorElement[]) => as.map((a) => a.getAttribute('href')!).filter((h) => !document.querySelector(h)))
     assert.deepEqual(toc, [], 'every docs link has its section')
     const docsText: string = await page.evaluate(() => document.body.innerText)
@@ -222,7 +222,7 @@ test('the landing page: one typeface, nothing overflowing, and it leads to the a
     // the call to action opens the app
     await page.setViewport({ width: 1280, height: 900 })
     await page.goto(`${BASE}/?intro=0`, { waitUntil: 'networkidle0' })
-    await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.click('.l-hero .btn.lg')])
+    await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.click('.l-hero .lf-cta .btn:not(.ghost)')])
     assert.ok(page.url().endsWith('/app.html'))
     await page.waitForSelector('.gate', { timeout: 30_000 })
     assert.deepEqual(errors, [])

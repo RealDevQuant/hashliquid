@@ -2,7 +2,7 @@
   agents-page.ts — the Agents page: three profiles (who, strategy, wallet, money made or lost, win/loss, what is
   open now) and the table of every trade. Everything comes from the agents' public feed.
 */
-import '@fontsource-variable/space-grotesk'
+import '@fontsource-variable/geist-mono'
 import './style.css'
 import { wireLinks } from './links.ts'
 import { AGGR_LABEL, BASE_LABEL, FLAT_TEXT, ago, avatarHtml, duration, fetchFeed, metricsHtml, type Agent, type Custom, type Feed, type Hired, type Trade } from './agents.ts'
