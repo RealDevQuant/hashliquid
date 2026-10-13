@@ -2,7 +2,7 @@
   intro.ts — the vault. A round blast door in a concrete wall, the HashLiquid mark on its face, one line under it.
   Click (or Enter) spins the wheel, pulls the bolts, swings the door and flies the camera through into the site.
   Procedural three.js geometry with canvas textures; the only image is the logo. Ported from BUNKERPAD's door.
-  Shown once per browser session on "/" (force with ?intro=1, skip with ?intro=0, Esc skips).
+  Shown once per browser on "/" (force with ?intro=1, skip with ?intro=0, Esc skips).
 */
 import * as THREE from 'three'
 
