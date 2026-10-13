@@ -193,7 +193,7 @@ async function swapSolToUsdt(lamports: bigint): Promise<bigint> {
 /** Two chips: deposit USDT as it is, or SOL that the wallet swaps first. */
 const assetChips = (name: string): string => { const v = f(name) || 'usdt'; return `<div class="t-asset">${[['usdt', quoteName()], ['sol', 'SOL · swapped to ' + quoteName()]].map(([k, l]) => `<button type="button" class="chip ${v === k ? 'on' : ''}" data-action="${name}" data-arg="${k}">${esc(l)}</button>`).join('')}</div>` }
 
-async function send(ixs: TransactionInstruction[], cu?: number): Promise<string> {
+async function send(ixs: TransactionInstruction[], cu?: number, onSent?: () => void): Promise<string> {
   const wallet = ui.wallet!
   // Phantom sets its own priority fee: ours would sit next to it. The compute limit stays: a signature needs it.
   const fee = NET === 'localnet' || wallet.signAndSend ? [] : [H.priorityFeeIx(Number(import.meta.env.VITE_PRIORITY_FEE ?? 5_000))]
@@ -214,14 +214,11 @@ async function send(ixs: TransactionInstruction[], cu?: number): Promise<string>
     if (/insufficient (lamports|funds)/i.test(logs.join(' ')) || /InsufficientFunds/.test(err)) throw new Error(`The wallet ${short(wallet.publicKey)} holds ${ui.chain.sol.toFixed(4)} SOL: not enough for the rent and fees of this move (about ${OPEN_SOL} SOL).`)
     throw new Error(why ? why.replace(/\.$/, '') + '.' : `This move would fail: ${err}`)
   }
-  let sig: string, raw: Uint8Array | null = null
-  if (wallet.signAndSend) sig = await wallet.signAndSend(tx)   // Phantom: its popup, its simulation, its send
-  else {
-    const signed = await wallet.signTransaction(tx)
-    raw = signed.serialize()
-    // the RPC simulates first: a move that would fail never gets published
-    sig = await conn.sendRawTransaction(raw, { skipPreflight: false, maxRetries: 0 })
-  }
+  const signed = await wallet.signTransaction(tx)
+  const raw: Uint8Array | null = signed.serialize()
+  // the RPC simulates first: a move that would fail never gets published
+  const sig = await conn.sendRawTransaction(raw, { skipPreflight: false, maxRetries: 0 })
+  onSent?.()   // from here on the network has it: the signature can no longer be taken back
   const failed = async (err: unknown) => {
     const info = await conn.getTransaction(sig, { commitment: 'confirmed', maxSupportedTransactionVersion: 0 }).catch(() => null)
     const logs = info?.meta?.logMessages ?? []
@@ -258,8 +255,9 @@ const signContext = (): H.SignContext => {
 /** One signed move of the bunker: the signature first, then the instruction it authorizes. */
 async function act(ix: TransactionInstruction, note: string, before: TransactionInstruction[] = [], after: TransactionInstruction[] = []): Promise<bigint> {
   const p = H.prepareAction(signContext(), ix, note)
+  localStorage.setItem(`${ledger.key(keys().address, p.signed.nonce)}:at`, String(Date.now()))
   ui.busy = `Key #${p.signed.nonce}: sending the signature…`; render()
-  await send([p.authorize], H.CU.AUTHORIZE)
+  await send([p.authorize], H.CU.AUTHORIZE, () => localStorage.setItem(`${ledger.key(keys().address, p.signed.nonce)}:sent`, '1'))
   ui.busy = `Key #${p.signed.nonce}: sending the ${note}…`; render()
   await send([...before, p.execute, ...after], H.CU.EXECUTE)
   return p.signed.nonce
@@ -589,6 +587,14 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     if (execute) await send([execute], H.CU.EXECUTE)
     return 'Sent.'
   },
+  /** A signature that never reached the network, or whose window has long passed: the key is free to sign something else. */
+  async discardSigned() {
+    const b = ui.chain.bunker!, k = ledger.key(keys().address, b.nonce)
+    const sent = !!localStorage.getItem(`${k}:sent`), at = Number(localStorage.getItem(`${k}:at`) || 0)
+    if (sent && Date.now() - at <= 180_000) throw new Error('That signature was sent less than three minutes ago: wait, it may still land.')
+    localStorage.removeItem(k); localStorage.removeItem(`${k}:sent`); localStorage.removeItem(`${k}:at`)
+    return `Discarded. Key #${b.nonce} is free again; nothing was sent.`
+  },
   async dropPending() {
     const off = H.prepareCancel(signContext())
     await send([off.authorize], H.CU.AUTHORIZE)
@@ -599,7 +605,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     const record = ledger.get(keys().address, ui.chain.bunker!.nonce)
     if (!record) return
     const { authorize, execute } = H.fromRecord({ bunker: keys().address, record })
-    await send([authorize], H.CU.AUTHORIZE)
+    await send([authorize], H.CU.AUTHORIZE, () => localStorage.setItem(`${ledger.key(keys().address, ui.chain.bunker!.nonce)}:sent`, '1'))
     if (execute) await send([execute], H.CU.EXECUTE)
     return 'Sent.'
   },
@@ -959,8 +965,12 @@ function pendingBanner(): string {
   }
   const unsent = ledger.get(keys().address, b.nonce)
   if (unsent) {
-    return `<div class="note">Key #${b.nonce} already signed ${unsent.note ? 'a ' + esc(unsent.note) : 'a move'} on this device and it hasn't landed. A key signs one message: send that one again.
-      <div class="row"><button data-action="resend">Send it again</button></div></div>`
+    const k = ledger.key(keys().address, b.nonce)
+    const sent = !!localStorage.getItem(`${k}:sent`), at = Number(localStorage.getItem(`${k}:at`) || 0)
+    const canDiscard = !sent || Date.now() - at > 180_000   // never handed to the network, or its blockhash window is long gone: it can never land
+    return `<div class="note">Key #${b.nonce} already signed ${unsent.note ? 'a ' + esc(unsent.note) : 'a move'} on this device and it hasn't landed. A key signs one message: send that one again${canDiscard ? ', or discard it' : ''}.
+      <div class="row"><button data-action="resend">Send it again</button>${canDiscard ? '<button class="ghost" data-action="discardSigned">Discard it</button>' : ''}</div>
+      ${canDiscard ? `<p class="dim small">Discarding is safe here: ${sent ? 'the signature was sent minutes ago and its window has passed, so it can never land' : 'the signature never left this device'}. Key #${b.nonce} signs something else next.</p>` : ''}</div>`
   }
   return ''
 }
