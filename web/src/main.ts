@@ -281,12 +281,20 @@ function orderFromForm(): H.V.OrderParams {
 }
 /** The market's maximum leverage, from its initial margin ratio. */
 const maxLeverage = (m: MarketInfo | null): number => (m?.perp.marginRatioInitial ? Number(10_000n / BigInt(m.perp.marginRatioInitial)) : 20)
+/** A size with exactly the decimals the market's step needs (0.0001 BTC is "0.0001", not "0.000"). */
+function fmtSize(size: bigint, perp: H.V.PerpMarket): string {
+  let step = perp.orderStepSize, zeros = 0
+  while (zeros < 9 && step % 10n === 0n) { step /= 10n; zeros++ }
+  const decimals = 9 - zeros
+  const whole = size / V.BASE_PRECISION, frac = (size % V.BASE_PRECISION).toString().padStart(9, '0').slice(0, decimals)
+  return decimals ? `${whole}.${frac}` : whole.toString()
+}
 /** The size that puts `lev` times the collateral into this market, as the size field shows it. */
 function sizeForLeverage(lev: number): string {
   const m = current()
   if (!m || !m.price || collateral() <= 0n) return ''
   const raw = (collateral() * BigInt(Math.round(lev * 100)) * V.BASE_PRECISION) / (m.price * 100n)
-  return base(V.toStep(raw, m.perp))
+  return fmtSize(V.toStep(raw, m.perp), m.perp)
 }
 /** The leverage the size typed means on this bunker's collateral (0 when there is none). */
 function leverageOfForm(): number {
@@ -442,7 +450,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     const size = sizeForLeverage(lev)
     if (m && m.price && collateral() > 0n && !(Number(size) > 0)) {
       const minUsd = Number((m.perp.orderStepSize * m.price) / V.BASE_PRECISION) / 1e6
-      throw new Error(`${lev}x of your ${usd(collateral())} ${quoteName()} is ${usd(BigInt(Math.round(Number(collateral()) * lev)))}: below this market's smallest order, ${base(m.perp.orderStepSize)} ${m.coin} (about ${minUsd.toFixed(0)} ${quoteName()}). Deposit more, or trade a market with a smaller minimum.`)
+      throw new Error(`${lev}x of your ${usd(collateral())} ${quoteName()} is ${usd(BigInt(Math.round(Number(collateral()) * lev)))}: below this market's smallest order, ${fmtSize(m.perp.orderStepSize, m.perp)} ${m.coin} (about ${minUsd.toFixed(0)} ${quoteName()}). Deposit more, or trade a market with a smaller minimum.`)
     }
     ui.form.size = size
   },
