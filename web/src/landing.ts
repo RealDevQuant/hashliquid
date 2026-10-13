@@ -55,7 +55,7 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
 
 // the home's motion and the floating nav
 {
-  const nav = document.querySelector<HTMLElement>('.nav'); if (nav) void import('./home.ts').then((m) => m.floatNav(nav))
+  void import('./nav.ts').then((m) => m.all())
   const dust = document.querySelector<HTMLCanvasElement>('.z-dust'), dev = document.querySelector<HTMLElement>('.z-device'), keys = document.querySelector<HTMLElement>('.z-keys')
   if (dust || dev || keys) void import('./home.ts').then((m) => { if (dust) m.dust(dust); if (dev) m.device(dev); if (keys) m.keys(keys) })
 }

@@ -71,9 +71,3 @@ export function keys(list: HTMLElement) {
   }
   setInterval(step, 2600)
 }
-
-/** The nav turns into a floating pill once the page has moved. */
-export function floatNav(nav: HTMLElement) {
-  const set = () => nav.classList.toggle('is-float', scrollY > 40)
-  addEventListener('scroll', set, { passive: true }); set()
-}
