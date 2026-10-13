@@ -39,7 +39,7 @@ const MARKET_KEY = 'hashliquid:market'
 /** deploy.html: the same app in one column, as a wizard that ends with an agent on your bunker. */
 const DEPLOY = location.pathname.endsWith('/deploy.html')
 /** The markets the terminal shows (the venue lists more; the rest come back once we are fully live). */
-const MARKETS_SHOWN: string[] = String(import.meta.env.VITE_MARKETS || 'SOL-PERP,BTC-PERP,ETH-PERP').split(',').map((x) => x.trim())
+const MARKETS_SHOWN: string[] = String(import.meta.env.VITE_MARKETS || 'BTC-PERP,ETH-PERP,SOL-PERP').split(',').map((x) => x.trim())   // in this order
 const IND_KEY = 'hashliquid:indicators'
 
 interface MarketInfo { index: number; name: string; coin: string; perp: H.V.PerpMarket; price: bigint | null; change24h: number | null }
@@ -53,7 +53,7 @@ const ui = {
   /** Freshly generated words, shown until the user confirms they are written down. */
   fresh: null as string | null,
   chain: { state: null, quote: null, markets: [], bunker: null, user: null, sol: 0, tokens: 0n } as Chain,
-  market: Number(localStorage.getItem(MARKET_KEY) ?? 0),
+  market: Number(localStorage.getItem(MARKET_KEY) ?? -1),   // -1: the first market shown, until one is picked
   interval: (localStorage.getItem('hashliquid:interval') as Interval) || ('1h' as Interval),
   indicators: { ema: true, vwap: true, volume: true, ...JSON.parse(localStorage.getItem(IND_KEY) || '{}') } as Indicators,
   tab: 'positions' as 'positions' | 'orders' | 'activity' | 'agents',
@@ -118,6 +118,7 @@ async function loadMarkets() {
     if (!MARKETS_SHOWN.includes(name)) continue
     markets.push({ index: i, name, coin: name.replace(/-PERP$/, ''), perp, price: null, change24h: null })
   }
+  markets.sort((a, b) => MARKETS_SHOWN.indexOf(a.name) - MARKETS_SHOWN.indexOf(b.name))   // BTC, ETH, SOL
   c.markets = markets
   if (!markets.some((m) => m.index === ui.market) && markets[0]) ui.market = markets[0].index
 }
