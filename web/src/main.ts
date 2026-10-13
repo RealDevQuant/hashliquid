@@ -272,8 +272,8 @@ function orderFromForm(): H.V.OrderParams {
   if (!m || !m.price) throw new Error('No oracle price right now.')
   const direction = f('side') === 'long' ? V.DIRECTION.LONG : V.DIRECTION.SHORT
   if (!f('size').trim()) throw new Error(collateral() > 0n ? 'Enter a size, or pick a leverage.' : 'Deposit collateral first, then enter a size or pick a leverage.')
-  const size = V.toStep(parseUnits(f('size'), 9), m.perp)
-  if (size <= 0n) throw new Error(`The smallest size on this market is ${base(m.perp.orderStepSize)}.`)
+  const size = sizeFromForm(m)
+  if (size <= 0n) throw new Error(`The smallest order on this market is ${fmtSize(m.perp.orderStepSize, m.perp)} ${m.coin}${m.price ? ` (about ${usd((m.perp.orderStepSize * m.price) / V.BASE_PRECISION)} ${quoteName()})` : ''}.`)
   let limit: bigint
   if (f('type') === 'limit') limit = parseUnits(f('limit'), 6)
   else {
@@ -292,10 +292,20 @@ function fmtSize(size: bigint, perp: H.V.PerpMarket): string {
   const whole = size / V.BASE_PRECISION, frac = (size % V.BASE_PRECISION).toString().padStart(9, '0').slice(0, decimals)
   return decimals ? `${whole}.${frac}` : whole.toString()
 }
+/** 'usd': the size field is in USDT (the default: "100 dollars of BTC"); 'base': in the coin. */
+const sizeMode = (): 'usd' | 'base' => (ui.form.sizeMode === 'base' ? 'base' : 'usd')
+/** The coin amount the size field means, rounded to the market's step. */
+function sizeFromForm(m: MarketInfo): bigint {
+  if (sizeMode() === 'base') return V.toStep(parseUnits(f('size'), 9), m.perp)
+  if (!m.price) throw new Error('No oracle price right now.')
+  const usd = parseUnits(f('size'), 6)
+  return V.toStep((usd * V.BASE_PRECISION) / m.price, m.perp)
+}
 /** The size that puts `lev` times the collateral into this market, as the size field shows it. */
 function sizeForLeverage(lev: number): string {
   const m = current()
   if (!m || !m.price || collateral() <= 0n) return ''
+  if (sizeMode() === 'usd') return (Number((collateral() * BigInt(Math.round(lev * 100))) / 100n) / 1e6).toFixed(2)
   const raw = (collateral() * BigInt(Math.round(lev * 100)) * V.BASE_PRECISION) / (m.price * 100n)
   return fmtSize(V.toStep(raw, m.perp), m.perp)
 }
@@ -304,7 +314,7 @@ function leverageOfForm(): number {
   const m = current()
   if (!m || !m.price || collateral() <= 0n) return 0
   let size = 0n
-  try { size = V.toStep(parseUnits(f('size') || '0', 9), m.perp) } catch { return 0 }
+  try { size = sizeFromForm(m) } catch { return 0 }
   return Math.round((Number((size * m.price) / V.BASE_PRECISION) / Number(collateral())) * 10) / 10
 }
 function leverageHtml(): string {
@@ -321,7 +331,7 @@ const previewHtml = (): string => {
     const notional = (params.baseAssetAmount * (current()?.price ?? 0n)) / V.BASE_PRECISION
     const lev = collateral() > 0n ? Number(notional) / Number(collateral()) : 0
     const max = maxLeverage(current())
-    return `<dl class="t-preview"><div><dt>${f('side') === 'long' ? 'Buys' : 'Sells'} no worse than</dt><dd>${price(params.price)}</dd></div><div><dt>Notional</dt><dd>${usd(notional)}</dd></div><div><dt>Leverage</dt><dd class="${lev > max ? 'neg' : ''}">${lev.toFixed(1)}x${lev > max ? ` · above ${max}x` : ''}</dd></div></dl>`
+    return `<dl class="t-preview"><div><dt>${f('side') === 'long' ? 'Buys' : 'Sells'}</dt><dd>${fmtSize(params.baseAssetAmount, current()!.perp)} ${esc(current()!.coin)}</dd></div><div><dt>No worse than</dt><dd>${price(params.price)}</dd></div><div><dt>Notional</dt><dd>${usd(notional)}</dd></div><div><dt>Leverage</dt><dd class="${lev > max ? 'neg' : ''}">${lev.toFixed(1)}x${lev > max ? ` · above ${max}x` : ''}</dd></div></dl>`
   } catch (e) { return `<p class="dim small t-preview">${esc(e instanceof Error ? e.message : String(e))}</p>` }
 }
 
@@ -390,6 +400,8 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     return swapped ? `${swapped}eposited it.` : `Deposited ${usd(amount)} ${quoteName()}.`
   },
   async depositAsset(a) { ui.form.depositAsset = a ?? 'usdt' },
+  /** Switching how the size is written converts what is typed, so the order stays the same. */
+  async sizeMode(a) { const m = current(); const was = sizeMode(); const to = a === 'base' ? 'base' : 'usd'; if (was === to) return; let size = 0n; try { if (m) size = sizeFromForm(m) } catch { size = 0n }; ui.form.sizeMode = to; if (m && m.price && size > 0n) ui.form.size = to === 'base' ? fmtSize(size, m.perp) : (Number((size * m.price) / V.BASE_PRECISION) / 1e6).toFixed(2) },
   async fundAsset(a) { ui.form.fundAsset = a ?? 'usdt' },
 
   /** Signed: out of the exchange, to the wallet's token account or to the owner typed in. */
@@ -565,7 +577,7 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
 }
 
 /** Actions that only change what is shown: no chain, no busy state. */
-const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'depositAsset', 'fundAsset', 'aggr', 'base', 'deployAgain'])
+const QUIET = new Set(['market', 'interval', 'indicator', 'tab', 'side', 'type', 'reduceOnly', 'account', 'closeDrawer', 'showSecret', 'newWords', 'confirmWords', 'importWords', 'forgetWords', 'pick', 'pickLogo', 'lev', 'sizeMode', 'depositAsset', 'fundAsset', 'aggr', 'base', 'deployAgain'])
 async function run(name: string, arg?: string) {
   if (ui.busy) return
   if (QUIET.has(name)) {
@@ -963,7 +975,8 @@ function orderPanel(): string {
     ${pendingBanner()}
     <div class="side"><button data-action="side" data-arg="long" class="long ${long ? 'on' : ''}">Long</button><button data-action="side" data-arg="short" class="short ${long ? '' : 'on'}">Short</button></div>
     <div class="t-type"><button data-action="type" data-arg="market" class="${limitMode ? '' : 'on'}">Market</button><button data-action="type" data-arg="limit" class="${limitMode ? 'on' : ''}">Limit</button></div>
-    <div class="row">${field('size', `Size (${esc(m?.coin ?? '')})`, 'inputmode="decimal"')}${limitMode ? field('limit', `Limit price (${quoteName()})`, 'inputmode="decimal"') : field('slippage', 'Slippage %', 'inputmode="decimal"')}</div>
+    <div class="t-sizemode"><button type="button" class="chip ${sizeMode() === 'usd' ? 'on' : ''}" data-action="sizeMode" data-arg="usd">Size in ${quoteName()}</button><button type="button" class="chip ${sizeMode() === 'base' ? 'on' : ''}" data-action="sizeMode" data-arg="base">Size in ${esc(m?.coin ?? '')}</button></div>
+    <div class="row">${field('size', sizeMode() === 'usd' ? `Size (${quoteName()} of ${esc(m?.coin ?? '')})` : `Size (${esc(m?.coin ?? '')})`, 'inputmode="decimal" placeholder="' + (sizeMode() === 'usd' ? '100' : '') + '"')}${limitMode ? field('limit', `Limit price (${quoteName()})`, 'inputmode="decimal"') : field('slippage', 'Slippage %', 'inputmode="decimal"')}</div>
     ${leverageHtml()}${errLine()}
     <label class="t-check"><input type="checkbox" data-action="reduceOnly" ${ui.form.reduceOnly ? 'checked' : ''} /> Reduce only</label>
     ${previewHtml()}

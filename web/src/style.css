@@ -753,3 +753,8 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 .t-asset { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 #app .t-asset .chip { padding: 6px 10px; font-size: 13px; background: transparent; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 999px; }
 #app .t-asset .chip.on { color: var(--text); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* the size: in dollars, or in the coin */
+.t-sizemode { display: flex; gap: 6px; margin-bottom: -4px; }
+#app .t-sizemode .chip { padding: 5px 10px; font-size: 12px; background: transparent; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 999px; }
+#app .t-sizemode .chip.on { color: var(--text); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }

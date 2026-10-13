@@ -97,6 +97,7 @@ test('a bunker from the page: deposit, order, cancel, withdraw', { skip: missing
 
     // buy 1 SOL-PERP: signed with key #0. Nobody is selling on this validator, so it rests. (BTC is the first market shown: pick SOL.)
     await click('[data-action="market"][data-arg="0"]'); await idle()
+    await click('[data-action="sizeMode"][data-arg="base"]'); await idle()   // the test counts in SOL, the page counts in dollars by default
     await type('size', '1')
     await shot('2-ready')
     await click('[data-action="order"]')
