@@ -168,7 +168,7 @@ button, input, select { font: inherit; }
 .l-final p { margin: 22px auto 0; max-width: 30em; color: var(--muted); font-size: clamp(18px, 1.4vw, 23px); }
 .l-final .l-cta { justify-content: center; }
 
-.l-foot { position: relative; overflow: hidden; border-top: 1px solid var(--line); padding: 56px 0 0; margin-top: 40px; }
+.l-foot { position: relative; border-top: 1px solid var(--line); padding: 56px 0 0; margin-top: 40px; }
 .l-foot .foot-grid { display: grid; grid-template-columns: 1.6fr repeat(3, minmax(0, 1fr)); gap: 32px; align-items: start; }
 .l-foot .foot-brand .fine { margin-top: 14px; max-width: 28em; }
 .l-foot nav { display: grid; gap: 10px; align-content: start; }
@@ -176,7 +176,7 @@ button, input, select { font: inherit; }
 .l-foot nav a { color: var(--text); text-decoration: none; font-size: 16px; width: fit-content; }
 .l-foot nav a:hover { color: var(--accent-2); }
 .l-foot .foot-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); }
-.l-foot .foot-mark { font-size: clamp(88px, 17vw, 290px); font-weight: 700; letter-spacing: -0.03em; line-height: 0.82; text-align: center; white-space: nowrap; margin-top: 14px; margin-bottom: -0.26em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-mask-image: linear-gradient(180deg, #000 30%, rgba(0, 0, 0, 0.3) 100%); mask-image: linear-gradient(180deg, #000 30%, rgba(0, 0, 0, 0.3) 100%); user-select: none; pointer-events: none; }
+.l-foot .foot-mark { font-size: clamp(56px, 14.5vw, 250px); font-weight: 700; letter-spacing: -0.02em; line-height: 0.95; text-align: center; white-space: nowrap; margin: 18px 0 0; padding: 0 var(--gutter) 28px; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; user-select: none; pointer-events: none; }
 @media (max-width: 900px) { .l-foot .foot-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px) { .l-foot .foot-grid { grid-template-columns: 1fr; } }
 
