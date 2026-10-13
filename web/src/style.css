@@ -758,3 +758,11 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 .t-sizemode { display: flex; gap: 6px; margin-bottom: -4px; }
 #app .t-sizemode .chip { padding: 5px 10px; font-size: 12px; background: transparent; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 999px; }
 #app .t-sizemode .chip.on { color: var(--text); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* the Account panel: two ways in, one way out */
+.acct-cards { display: grid; gap: 10px; }
+.acct-card { display: grid; gap: 8px; padding: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.acct-card h3 { font-size: 16px; font-weight: 600; }
+.acct-addr { padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.drawer section { display: grid; gap: 10px; }
+.drawer section h2 { font-size: 13px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }

@@ -88,7 +88,7 @@ test('a bunker from the page: deposit, order, cancel, withdraw', { skip: missing
     const bunker = new PublicKey(await text('#bunker-address'))
     assert.equal((await V.getUser(conn, bunker))!.authority.toBase58(), bunker.toBase58(), 'the exchange account belongs to the bunker')
     await type('deposit', '500')
-    await click('[data-action="deposit"]')
+    await click('[data-action="depositUsdt"]')
     await idle()
     await closeDrawer()
     assert.equal(await text('#collateral'), '500.00 USDT', await lastLog())

@@ -400,6 +400,8 @@ const actions: Record<string, (arg?: string) => Promise<string | void>> = {
     return swapped ? `${swapped}eposited it.` : `Deposited ${usd(amount)} ${quoteName()}.`
   },
   async depositAsset(a) { ui.form.depositAsset = a ?? 'usdt' },
+  async depositUsdt() { ui.form.depositAsset = 'usdt'; return actions.deposit() },
+  async depositSol() { ui.form.depositAsset = 'sol'; ui.form.deposit = f('depositSol').trim() || Math.max(0, ui.chain.sol - SOL_RESERVE).toFixed(4); const r = await actions.deposit(); ui.form.depositSol = ''; return r },
   /** Switching how the size is written converts what is typed, so the order stays the same. */
   async sizeMode(a) { const m = current(); const was = sizeMode(); const to = a === 'base' ? 'base' : 'usd'; if (was === to) return; let size = 0n; try { if (m) size = sizeFromForm(m) } catch { size = 0n }; ui.form.sizeMode = to; if (m && m.price && size > 0n) ui.form.size = to === 'base' ? fmtSize(size, m.perp) : (Number((size * m.price) / V.BASE_PRECISION) / 1e6).toFixed(2) },
   async fundAsset(a) { ui.form.fundAsset = a ?? 'usdt' },
@@ -883,7 +885,6 @@ async function pollBook() {
   const b = await fetchBook(m.name)
   if (current()?.name !== m.name) return
   ui.live.book = b; ui.live.bookFor = m.name
-  if (b && chart && chart.coin === m.coin) chart.tick(b.mid)   // the last candle follows the book's mid between candle refreshes
   patchLive()
 }
 async function pollTrades() {
@@ -1161,6 +1162,7 @@ function drawer(): string {
   const w = ui.wallet!
   const b = ui.chain.bunker
   const held = collateral()
+  const spendable = Math.max(0, ui.chain.sol - SOL_RESERVE)
   return `<div class="drawer-back" data-action="closeDrawer"></div><aside class="drawer">
     <div class="drawer-head"><h2>Account</h2><button class="ghost sm" data-action="closeDrawer">Close</button></div>
     <section><h2>Wallet</h2>
@@ -1169,7 +1171,6 @@ function drawer(): string {
         <div><dt>SOL</dt><dd>${ui.chain.sol.toFixed(3)}</dd></div>
         <div><dt>${quoteName()}</dt><dd id="wallet-tokens">${usd(ui.chain.tokens)}</dd></div>
       </dl>
-      ${w.local ? `<p>Send SOL for fees and ${quoteName()} for collateral to this address.</p>` : ''}
       <div class="row">
         ${w.local && NET === 'localnet' ? '<button class="ghost sm" data-action="fund">Get test funds</button>' : ''}
         ${w.local ? `<button class="ghost sm" data-action="showSecret">${ui.showSecret ? 'Hide' : 'Back up'} secret key</button>` : ''}
@@ -1177,19 +1178,29 @@ function drawer(): string {
       </div>
       ${w.local && ui.showSecret ? `<p>Keep this somewhere safe: it is the only copy. It imports into Phantom and the Solana CLI.</p><p class="mono small break" style="user-select:all">${esc(browserWalletSecret() ?? '')}</p>` : ''}
     </section>
-    ${ui.master ? `<section><h2>24 words</h2><p>Loaded in this tab. They sign here in the browser and are never sent anywhere.</p>
-      <div class="row"><button class="ghost sm" data-action="forgetWords">Forget them in this tab</button></div></section>` : ''}
-    ${b && ui.chain.user ? `<section><h2>Bunker <span class="badge locked">key #${b.nonce}</span></h2>
-      <dl>
-        <div><dt>Address</dt><dd class="small" id="bunker-address">${keys().address.toBase58()}</dd></div>
-        <div><dt>Collateral</dt><dd>${usd(held)} ${quoteName()}</dd></div>
-      </dl>
-      ${assetChips('depositAsset')}
-      <div class="row">${field('deposit', (f('depositAsset') || 'usdt') === 'sol' ? `Deposit SOL from the wallet (swapped to ${quoteName()} first, two signatures)` : `Deposit ${quoteName()} from the wallet (empty = all)`, 'inputmode="decimal"')}<button data-action="deposit">Deposit</button></div>
-      <div class="row">${field('withdraw', `Withdraw ${quoteName()} (empty = all)`, 'inputmode="decimal"')}${field('to', 'To (empty = this wallet)', 'placeholder="owner address" autocomplete="off" spellcheck="false"')}</div>
+    ${b && ui.chain.user ? `<section><h2>Deposit</h2>
+      <div class="acct-cards">
+        <article class="acct-card">
+          <h3>Deposit ${quoteName()} here</h3>
+          <p class="dim small">Send ${quoteName()} on Solana to the wallet's address, then press the button.</p>
+          <p class="mono small break acct-addr" style="user-select:all">${w.publicKey.toBase58()}</p>
+          ${ui.chain.tokens > 0n ? `<div class="row">${field('deposit', `Amount (empty = all ${usd(ui.chain.tokens)})`, 'inputmode="decimal"')}<button data-action="depositUsdt">Deposit</button></div>` : `<p class="dim small">No ${quoteName()} in the wallet yet.</p>`}
+        </article>
+        <article class="acct-card">
+          <h3>Swap SOL for ${quoteName()}</h3>
+          <p class="dim small">The wallet holds ${ui.chain.sol.toFixed(3)} SOL. It swaps on the open market and deposits in one go: two signatures.</p>
+          ${spendable > 0.001 ? `<div class="row">${field('depositSol', `SOL to swap (empty = all ${spendable.toFixed(3)})`, 'inputmode="decimal"')}<button data-action="depositSol">Swap and deposit</button></div>` : `<p class="dim small">Send SOL to the address above first (${SOL_RESERVE} stays for fees).</p>`}
+        </article>
+      </div>
+    </section>
+    <section><h2>Withdraw <span class="badge locked">key #${b.nonce}</span></h2>
+      <p class="dim small">The bunker holds ${usd(held)} ${quoteName()}. Withdrawing is signed with the next one-time key.</p>
+      <div class="row">${field('withdraw', `${quoteName()} (empty = all)`, 'inputmode="decimal"')}${field('to', 'To (empty = this wallet)', 'placeholder="owner address" autocomplete="off" spellcheck="false"')}</div>
       <p class="dim small burn-line">${burnLine()}</p>
-      <div class="row"><button class="ghost" data-action="withdraw" ${held > 0n && !blocked() ? '' : 'disabled'}>Sign with key #${b.nonce} &amp; withdraw</button></div>
-    </section>` : ''}
+      <div class="row"><button class="ghost" data-action="withdraw" ${held > 0n && !blocked() ? '' : 'disabled'}>Withdraw</button></div>
+    </section>` : `<section><h2>Bunker</h2><p class="dim">Open the bunker first: Step 3 in the terminal. Deposits and withdrawals appear here after that.</p></section>`}
+    ${ui.master ? `<section><h2>24 words</h2><p class="dim small">Loaded in this tab. They sign here in the browser and are never sent anywhere.</p>
+      <div class="row"><button class="ghost sm" data-action="forgetWords">Forget them in this tab</button></div></section>` : ''}
   </aside>`
 }
 
@@ -1271,7 +1282,6 @@ async function start() {
     try {
       await refresh()
       const m = current()
-      if (chart && m?.price && chart.coin === m.coin) chart.tick(Number(m.price) / 1e6)
       // numbers refresh in the background; the page isn't rebuilt under someone who is typing
       if (!ui.busy && !(document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) && !document.querySelector('#chart-slot:hover')) render()
     } catch { /* next tick */ }
