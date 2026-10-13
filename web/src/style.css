@@ -768,7 +768,7 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 .drawer section h2 { font-size: 13px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 
 /* =====================================================================================================
-   LIGHTER LANGUAGE (14/10/26): frames, mono, uppercase, flat. One font: Geist Mono. Applies to every page.
+   LIGHTER LANGUAGE (13/10/26): frames, mono, uppercase, flat. One font: Geist Mono. Applies to every page.
    ===================================================================================================== */
 :root {
   --font: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -889,7 +889,8 @@ a { color: var(--text); }
 .avatar, .lf-agent .avatar, #app .chart-bubbles .bubble, .coin, .face { border-radius: 50% !important; }
 .l-foot .foot-mark { -webkit-text-stroke: 1px var(--line-strong); color: transparent; background: none; }
 .docs-toc a { text-transform: uppercase; font-size: 11px; letter-spacing: 0.1em; }
-.intro-line { background: none; -webkit-text-fill-color: initial; color: var(--text); text-transform: uppercase; letter-spacing: 0.12em; font-size: clamp(16px, 2vw, 26px); font-weight: 500; filter: none; }
+/* the vault intro stays as it was: the sentence in Solana purple to magenta, never white */
+.intro-line { background: linear-gradient(90deg, #9945ff, #dc1fff); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; text-transform: none; }
 /* sizes the older rules were still winning */
 .lf-sec h2, .lf-head h2, .l-sec .lf-head h2, .l-meet .l-meet-h, .lf-sec .l-meet-h { font-size: clamp(18px, 1.9vw, 26px); line-height: 1.3; letter-spacing: 0.01em; font-weight: 500; }
 .l-sec .l-intro, .lf-sec .l-intro, .l-meet .l-intro { font-size: 13px; line-height: 1.7; color: var(--muted); max-width: 60em; margin: 0 0 18px; }
