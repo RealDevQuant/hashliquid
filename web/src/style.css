@@ -269,9 +269,10 @@ button, input, select { font: inherit; }
 
 .t-markets { padding: 12px 10px; }
 .t-markets h2 { padding: 6px 10px 10px; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-#app .t-market { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; width: 100%; text-align: left; background: transparent; color: var(--text); border: 1px solid transparent; border-radius: var(--radius-sm); padding: 10px 12px; font-weight: 500; font-size: 15px; }
+#app .t-market { display: grid; grid-template-columns: 22px 1fr auto; gap: 2px 10px; width: 100%; text-align: left; background: transparent; color: var(--text); border: 1px solid transparent; border-radius: var(--radius-sm); padding: 10px 12px; font-weight: 500; font-size: 15px; }
 #app .t-market:hover { background: var(--surface); filter: none; }
 #app .t-market.on { background: var(--surface); border-color: var(--line-strong); }
+.t-market .coin { grid-row: 1 / 3; align-self: center; }
 .t-market .name { grid-row: 1 / 3; align-self: center; }
 .t-market .px { text-align: right; font-weight: 600; }
 .t-market .chg { text-align: right; font-size: 13px; font-weight: 500; color: var(--muted); }
@@ -362,8 +363,9 @@ button, input, select { font: inherit; }
   .term { grid-template-columns: minmax(0, 1fr) 340px; }
   .t-markets { grid-column: 1 / -1; display: flex; gap: 6px; overflow-x: auto; padding: 10px; }
   .t-markets h2 { display: none; }
-  #app .t-market { width: auto; grid-template-columns: auto auto; }
+  #app .t-market { width: auto; grid-template-columns: 22px auto auto; }
   .t-market .name { grid-row: auto; }
+  .t-market .coin { grid-row: 1 / 3; }
   .t-market .chg { display: none; }
 }
 @media (max-width: 760px) {
@@ -497,7 +499,7 @@ button, input, select { font: inherit; }
   .t-center { display: contents; }
   .t-markets { order: 1; display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding: 10px 12px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
   .t-markets h2 { display: none; }
-  .t-market { flex: 0 0 auto; grid-template-columns: auto auto; gap: 2px 10px; padding: 8px 12px; }
+  .t-market { flex: 0 0 auto; grid-template-columns: 22px auto auto; gap: 2px 10px; padding: 8px 12px; }
   .t-strip { order: 2; flex-wrap: nowrap; overflow-x: auto; gap: 0 22px; padding: 10px 14px; scrollbar-width: none; }
   .t-stat { flex: 0 0 auto; }
   .t-stat.big b { font-size: 22px; }
@@ -714,8 +716,9 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 
 /* ---- coin marks in the market list ---- */
 #app .t-market { align-items: center; }
-#app .t-market .name { display: inline-flex; align-items: center; gap: 9px; line-height: 1; }
-#app .t-market .coin { width: 20px; height: 20px; border-radius: 50%; flex: none; display: block; object-fit: contain; background: var(--bg); border: 1px solid var(--line); box-sizing: border-box; padding: 1px; }
+#app .t-market .name { line-height: 1; }
+.coin { width: 22px; height: 22px; border-radius: 50%; flex: none; display: block; object-fit: contain; background: #0a0812; border: 1px solid var(--line-strong); box-sizing: border-box; padding: 3px; }
+.coin.lg { width: 28px; height: 28px; padding: 4px; }
 
 /* ---- the landing reveals as it scrolls into view ---- */
 @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(0.985); } to { opacity: 1; transform: none; } }
@@ -723,3 +726,6 @@ h1 em, .ag-hero h1 em { background: var(--grad); -webkit-background-clip: text; 
 .reveal.in { opacity: 1; transform: none; }
 .btn, #app button { transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.18s ease, filter 0.18s ease, border-color 0.18s ease; }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } .btn, #app button, .drawer, .gate-card { animation: none; transition: none; } }
+
+/* the market's mark next to its name above the chart */
+.t-strip .sym { display: inline-flex; align-items: center; gap: 10px; }

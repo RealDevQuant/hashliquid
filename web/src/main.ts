@@ -615,7 +615,7 @@ function gate(): string {
 function marketsPanel(): string {
   return `<aside class="t-markets"><h2>Markets</h2>${ui.chain.markets.map((m) => `
     <button class="t-market ${m.index === ui.market ? 'on' : ''}" data-action="market" data-arg="${m.index}">
-      <span class="name"><img class="coin" src="/coins/${esc(m.coin.toLowerCase())}.png" alt="" width="20" height="20" />${esc(m.name)}</span>
+      <img class="coin" src="/coins/${esc(m.coin.toLowerCase())}.png" alt="" width="22" height="22" /><span class="name">${esc(m.name)}</span>
       <span class="px">${m.price ? price(m.price) : '–'}</span>
       <span class="chg ${m.change24h == null ? '' : m.change24h >= 0 ? 'pos' : 'neg'}">${m.change24h == null ? '' : pct(m.change24h)}</span>
     </button>`).join('')}</aside>`
@@ -638,7 +638,7 @@ function marketStrip(): string {
   const fund = ui.live.funding
   const mark = ui.live.book && ui.live.bookFor === m.name ? ui.live.book.mid : null
   return `<div class="t-strip">
-    <div class="t-stat big"><span>${esc(m.name)}</span><b id="oracle">${m.price ? price(m.price) : '–'}</b></div>
+    <div class="t-stat big"><span class="sym"><img class="coin lg" src="/coins/${esc(m.coin.toLowerCase())}.png" alt="" width="28" height="28" />${esc(m.name)}</span><b id="oracle">${m.price ? price(m.price) : '–'}</b></div>
     <div class="t-stat"><span>Mark</span><b id="s-mark">${mark ? pricef(mark) : '–'}</b></div>
     <div class="t-stat"><span>24h change</span><b class="${chg == null ? '' : chg >= 0 ? 'pos' : 'neg'}">${chg == null ? '–' : pct(chg)}</b></div>
     <div class="t-stat"><span>24h volume</span><b id="s-vol">${st?.volume24h != null ? fmtUsd(st.volume24h) : '–'}</b></div>
