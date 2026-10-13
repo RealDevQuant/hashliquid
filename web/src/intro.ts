@@ -168,7 +168,7 @@ function buildScene(canvas: HTMLCanvasElement, logo: THREE.Texture): Api {
 export function showIntro(): Promise<void> {
   return new Promise((done) => {
     const root = document.createElement('div'); root.className = 'intro'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', 'HashLiquid')
-    root.innerHTML = `<canvas class="intro-canvas"></canvas><div class="intro-flash"></div><div class="intro-ui"><p class="intro-line">Trade perps in bunker mode.</p></div>`
+    root.innerHTML = `<canvas class="intro-canvas"></canvas><div class="intro-flash"></div><div class="intro-ui"><p class="intro-line">Trade perps in <em>bunker mode.</em></p></div>`
     document.body.appendChild(root)
     const canvas = root.querySelector('canvas')!, flash = root.querySelector<HTMLElement>('.intro-flash')!
     const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'

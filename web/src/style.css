@@ -865,7 +865,8 @@ a { color: var(--text); }
 .pill, .badge { text-transform: none; letter-spacing: 0; font-size: 13px; }
 
 /* the vault intro stays as it was: the sentence in Solana purple to magenta, never white */
-.intro-line { font-family: var(--font); background: linear-gradient(90deg, #9945ff, #dc1fff); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; text-transform: none; }
+.intro-line { font-family: var(--font); font-weight: 400; letter-spacing: -0.03em; font-size: clamp(30px, 4vw, 54px); background: linear-gradient(90deg, #9945ff, #dc1fff); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; text-transform: none; }
+.intro-line em { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: 0; }
 
 /* ---- the terminal: dense, tabular, the same glass ---- */
 #app { font-size: 13px; }
