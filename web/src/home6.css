@@ -69,7 +69,7 @@
 
 .n6-sec { padding: clamp(80px, 12vh, 150px) 0; border-bottom: 1px solid var(--line); }
 .n6-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: clamp(32px, 6vw, 120px); align-items: start; }
-.n6-head h2 { margin: 0; font-size: clamp(34px, 3.6vw, 48px); line-height: 1.06; letter-spacing: -0.024em; max-width: 11ch; text-wrap: balance; }
+.n6-head h2 { margin: 0; font-size: clamp(34px, 3.6vw, 48px); line-height: 1.06; letter-spacing: -0.03em; max-width: 13ch; text-wrap: balance; }
 .n6-head p { margin: 0; font-size: clamp(18px, 1.6vw, 22px); line-height: 1.4; letter-spacing: -0.012em; color: var(--text-2); max-width: 40ch; }
 .n6-more { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; font-size: 15px; color: var(--muted); text-decoration: none; }
 .n6-more:hover { color: var(--text); }

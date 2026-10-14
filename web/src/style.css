@@ -1131,11 +1131,10 @@ input, textarea, select { font-family: var(--font); font-size: 15px; letter-spac
 .brand b { font-family: var(--font-title); text-transform: none; letter-spacing: -0.02em; font-weight: 500; }
 .brand b span { color: var(--text); }
 
-/* ---- the purple trail under the pointer, and the words lit from behind ---- */
-.trail { position: fixed; inset: 0; z-index: 4; pointer-events: none; mix-blend-mode: screen; opacity: 0; transition: opacity 0.5s ease; }
-.trail.on { opacity: 1; }
-.trail i { position: absolute; left: 0; top: 0; border-radius: 50%; background: radial-gradient(circle, rgba(153, 69, 255, 0.55) 0%, rgba(153, 69, 255, 0.18) 38%, transparent 70%); filter: blur(22px); will-change: transform; }
-.trail i:nth-child(3) { background: radial-gradient(circle, rgba(220, 31, 255, 0.5) 0%, rgba(176, 140, 255, 0.2) 40%, transparent 70%); filter: blur(14px); }
+/* ---- the chain behind the page, and the words lit from behind ---- */
+body { position: relative; isolation: isolate; }
+.chainfield { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.l-hero, .n6-statement, .n6-figs, .n6-sec, .n6-end, .l-foot, .docs, .ag-hero, .ag-wrap { background: transparent; }
 h1, h2, .n6-statement p, .n6-head p, .n6-proof b, .n6-fig h3, .n6-steps h3, .n6-links b, .n6-agent .who b { transition: text-shadow 0.45s ease, color 0.3s ease; }
 h1:hover, h2:hover, .n6-statement p:hover, .n6-fig:hover h3, .n6-steps li:hover h3, .n6-links a:hover b, .n6-agent:hover .who b, .n6-proof li:hover b { text-shadow: 0 0 28px rgba(153, 69, 255, 0.75), 0 0 70px rgba(153, 69, 255, 0.35); }
 .n6-statement p:hover b, .n6-hero h1:hover em { color: var(--text); }
@@ -1144,4 +1143,3 @@ h1:hover, h2:hover, .n6-statement p:hover, .n6-fig:hover h3, .n6-steps li:hover 
 .n6-links a, .n6-steps li, .n6-agent, .n6-proof li, .n6-fig { position: relative; isolation: isolate; --mx: 50%; --my: 50%; }
 .n6-links a::before, .n6-steps li::before, .n6-agent::before, .n6-proof li::before, .n6-fig::before { content: ''; position: absolute; inset: -6px -12px; border-radius: 10px; pointer-events: none; z-index: -1; opacity: 0; transition: opacity 0.4s ease; background: radial-gradient(240px circle at var(--mx) var(--my), rgba(153, 69, 255, 0.16), transparent 62%); }
 .n6-links a:hover::before, .n6-steps li:hover::before, .n6-agent:hover::before, .n6-proof li:hover::before, .n6-fig:hover::before { opacity: 1; }
-@media (pointer: coarse) { .trail { display: none; } }
