@@ -1,7 +1,7 @@
 // The landing and the docs are plain HTML. This brings in the two typefaces, the shared stylesheet and the outside links,
 // and on the home it fills the agents' cards with their live numbers from the public feed.
 import '@fontsource-variable/inter'
-import '@fontsource-variable/geist-mono'
+import '@fontsource-variable/space-grotesk'
 import './style.css'
 import './home6.css'
 import { wireLinks } from './links.ts'
@@ -24,6 +24,7 @@ wireLinks()
   }
 }
 fx()
+void import('./nav.ts').then((m) => m.all())
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 const n = (x: number, d = 2) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })

@@ -3,7 +3,7 @@
   open now) and the table of every trade. Everything comes from the agents' public feed.
 */
 import '@fontsource-variable/inter'
-import '@fontsource-variable/geist-mono'
+import '@fontsource-variable/space-grotesk'
 import './style.css'
 import { wireLinks } from './links.ts'
 import { all as fx } from './fx.ts'
@@ -13,6 +13,7 @@ import { BURN_FEE_PCT, BURN_SHARE_PCT, BURN_WALLET } from './burn.ts'
 
 wireLinks()
 fx()
+void import('./nav.ts').then((m) => m.all())
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 const n = (x: number, d = 2) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })

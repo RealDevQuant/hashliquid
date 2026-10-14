@@ -8,10 +8,10 @@
 
 /* hero */
 .n6-hero { padding: clamp(64px, 12vh, 150px) 0 0; }
-.n6-hero h1 { font-size: clamp(40px, 5.6vw, 72px); line-height: 1.02; letter-spacing: -0.025em; font-weight: 510; max-width: 14ch; color: var(--text); margin: 0; }
-.n6-hero h1 em { font-style: normal; color: var(--text-2); font-weight: 510; }
-.n6-sub { margin-top: 36px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
-.n6-hero .l-lede { margin: 0; font-size: 17px; line-height: 1.5; color: var(--muted); max-width: 56ch; }
+.n6-hero h1 { font-size: clamp(42px, 6vw, 80px); line-height: 1.0; letter-spacing: -0.035em; font-weight: 500; max-width: 15ch; color: var(--text); margin: 0; text-wrap: balance; }
+.n6-hero h1 em { font-style: normal; color: var(--text-2); font-weight: 500; }
+.n6-sub { margin-top: 28px; }
+.n6-hero .l-lede { margin: 0; font-size: clamp(17px, 1.4vw, 20px); line-height: 1.5; color: var(--muted); max-width: 48ch; }
 .n6-new { display: inline-flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text-2); text-decoration: none; white-space: nowrap; }
 .n6-new b { font-weight: 510; color: var(--text); }
 .n6-new i { font-style: normal; transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1); }
@@ -32,7 +32,7 @@
 .n6-proof li { display: grid; gap: 6px; }
 .n6-proof b { font-weight: 510; font-size: 17px; color: var(--text); }
 .n6-proof span { font-size: 14px; color: var(--muted); line-height: 1.5; }
-.n6-proof .cap { margin-top: 36px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+.n6-proof .cap { margin-top: 36px; font-family: var(--font); font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
 
 @media (max-width: 900px) { .n6-proof ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) {
@@ -46,7 +46,7 @@
 
 /* ---- the rest of the page ---- */
 .n6-statement { padding: clamp(80px, 12vh, 150px) 0 clamp(40px, 6vh, 70px); }
-.n6-statement p { font-size: clamp(28px, 3.4vw, 48px); line-height: 1.12; letter-spacing: -0.022em; font-weight: 510; color: var(--muted); max-width: 26ch; margin: 0; }
+.n6-statement p { font-family: var(--font-title); font-size: clamp(28px, 3.4vw, 48px); line-height: 1.12; letter-spacing: -0.03em; font-weight: 500; color: var(--muted); max-width: 26ch; margin: 0; }
 .n6-statement b { font-weight: 510; color: var(--text); }
 
 .n6-figs { padding: clamp(40px, 6vh, 70px) 0 clamp(80px, 12vh, 150px); border-bottom: 1px solid var(--line); }
@@ -100,18 +100,18 @@
 
 .n6-links { margin-top: clamp(40px, 7vh, 80px); display: grid; border-top: 1px solid var(--line); }
 .n6-links a { display: grid; grid-template-columns: 56px 220px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--text); }
-.n6-links .k { font-family: var(--font-mono); font-size: 12px; color: var(--faint); }
+.n6-links .k { font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--faint); }
 .n6-links b { font-weight: 510; font-size: 15px; }
 .n6-links span:not(.k) { font-size: 14px; color: var(--muted); }
 .n6-links i { font-style: normal; color: var(--muted); transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.25s; }
 .n6-links a:hover i { transform: translateX(3px); color: var(--text); }
 .n6-addr { margin: 22px 0 0; font-size: 14px; color: var(--muted); }
-.n6-addr code { font-family: var(--font-mono); font-size: 13px; color: var(--text-2); margin-left: 8px; overflow-wrap: anywhere; }
+.n6-addr code { font-family: var(--font); font-size: 13px; color: var(--text-2); margin-left: 8px; overflow-wrap: anywhere; }
 
 .n6-steps { margin-top: clamp(40px, 7vh, 80px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line); }
 .n6-steps li { padding: 28px 32px 0 0; display: grid; gap: 10px; align-content: start; }
 .n6-steps li + li { padding-left: 32px; border-left: 1px solid var(--line); }
-.n6-steps .k { font-family: var(--font-mono); font-size: 12px; color: var(--faint); }
+.n6-steps .k { font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--faint); }
 .n6-steps h3 { margin: 6px 0 0; }
 .n6-steps p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--muted); }
 

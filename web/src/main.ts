@@ -15,7 +15,7 @@
 import './polyfill.ts'
 import { spotlight, buttons } from './fx.ts'
 import '@fontsource-variable/inter'
-import '@fontsource-variable/geist-mono'
+import '@fontsource-variable/space-grotesk'
 import './style.css'
 import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, type TransactionInstruction, VersionedTransaction } from '@solana/web3.js'
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'

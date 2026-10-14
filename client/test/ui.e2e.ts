@@ -29,7 +29,7 @@ const fontsInUse = () => {
   return [...seen]
 }
 // the two typefaces of the site: the sans everywhere, the serif only for the one italic word
-const FONTS = ['Inter Variable', 'Geist Mono Variable']
+const FONTS = ['Inter Variable', 'Space Grotesk Variable']
 const fontsOk = (fonts: string[], why: string) => assert.ok(fonts.includes(FONTS[0]) && fonts.every((f) => FONTS.includes(f)), `${why}: ${fonts.join(', ')}`)
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 const PUPPETEER = process.env.PUPPETEER || 'puppeteer-core'   // a path to a puppeteer-core install, when it is not in node_modules
@@ -174,7 +174,7 @@ test('the landing page: one typeface, nothing overflowing, and it leads to the a
     page.on('console', (m: { type(): string; text(): string }) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`) })
     await page.goto(`${BASE}/?intro=0`, { waitUntil: 'networkidle0' })
     await page.evaluate(() => document.fonts.ready)
-    assert.equal(await page.$eval('h1', (e: Element) => e.textContent?.trim()), 'Trade perps from a wallet no private key can move')
+    assert.equal(await page.$eval('h1', (e: Element) => e.textContent?.trim()), 'Trade perps from a wallet no private key can move.')
     assert.match(await page.$eval('.l-meet-h', (e: Element) => e.textContent?.trim() ?? ''), /^Three traders\. Three bunkers\./)
     fontsOk(await page.evaluate(fontsInUse), 'the two typefaces, nothing else, on the whole page')
     // the logo is in the header and in the footer, and the site has its icons
