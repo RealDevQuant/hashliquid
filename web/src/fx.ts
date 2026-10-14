@@ -116,6 +116,21 @@ export function hashField() {
   let W = 0, H = 0, cols = 0, rows = 0, cells: Cell[] = [], keys: Key[] = [], embers: Ember[] = [], raf = 0, on = true, last = 0
   let mx = -9999, my = -9999, nextKey = 1, burned = 0, idle = 0, lastY = scrollY, vel = 0
   const R = 240
+  // where the page has something to read or look at, the field stays dark: the rects of the content on screen
+  type Rect = { l: number; t: number; r: number; b: number }
+  let mask: Rect[] = [], maskAt = 0
+  const SEL = 'h1, h2, h3, h4, p, li, img, figure, canvas.iso, svg.iso, .btn, button, .metrics, .n6-agent, .n6-links a, .n6-steps li, .n6-proof li, .n6-fig, .nav-in, .brand, code, dl, table, .n6-art, .l-foot nav'
+  const refreshMask = () => {
+    const out: Rect[] = []
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>(SEL))) {
+      if (el.closest('.chainfield')) continue
+      const r = el.getBoundingClientRect()
+      if (r.bottom < -20 || r.top > H + 20 || r.width === 0 || r.height === 0) continue
+      out.push({ l: r.left - 14, t: r.top - 10, r: r.right + 14, b: r.bottom + 10 })
+    }
+    mask = out
+  }
+  const covered = (x: number, y: number) => { for (const m of mask) if (x > m.l && x < m.r && y > m.t && y < m.b) return true; return false }
   const build = () => {
     const r = canvas.getBoundingClientRect(); const dpr = Math.min(devicePixelRatio || 1, 1.25)
     W = r.width; H = r.height; canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -132,6 +147,7 @@ export function hashField() {
     if (!on) return
     const dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016; last = now
     const y = scrollY; vel = vel * 0.9 + (y - lastY) * 0.1; lastY = y
+    if (now - maskAt > 120 || Math.abs(y - lastY) > 0) { refreshMask(); maskAt = now }
     idle += dt * 18                                            // the chain creeps on its own; the scroll pushes it
     const drive = y + idle
     ctx.clearRect(0, 0, W, H)
@@ -145,6 +161,7 @@ export function hashField() {
       cell.t -= dt * (1 + band * 6)
       if (cell.t <= 0) { cell.c = HEX[rnd(16)]; cell.t = 2 + Math.random() * 12 }
       const px = c * CW - ox + CW / 2, py = r * CH - oy + CH / 2
+      if (covered(px, py)) continue
       const d = Math.hypot(px - mx, py - my), f = d < R ? 1 - d / R : 0, lit = f * f
       const scan = band * Math.max(0, 1 - Math.abs(py - H * 0.5) / (H * 0.5)) * 0.25
       const al = 0.038 + lit * 0.6 + scan
@@ -161,12 +178,13 @@ export function hashField() {
     for (let i = 0; i < keys.length; i++) {
       const k = keys[i], x = x0 + i * gap, yy = chainY(x, i)
       if (x < -200 || x > W + 60) continue
+      if (covered(x, yy) || covered(x + 76, yy) || covered(x + 38, yy - 16)) continue
       const d = Math.hypot(x + 36 - mx, yy - my), f = d < R ? 1 - d / R : 0, lit = f * f
       const signing = i === 0, next = i === 1, fresh = k.born ? Math.max(0, 1 - (now - k.born) / 900) : 0
       const base = signing ? 0.75 : next ? 0.42 : 0.22 - i * 0.015
       const al = Math.min(1, base + lit * 0.6)
       // the link to the next key: a line with the hash written on it
-      if (i < keys.length - 1) {
+      if (i < keys.length - 1 && !covered(x0 + (i + 1) * gap, chainY(x0 + (i + 1) * gap, i + 1)) && !covered((x + 76 + x0 + (i + 1) * gap) / 2, (yy + chainY(x0 + (i + 1) * gap, i + 1)) / 2)) {
         const nx = x0 + (i + 1) * gap, ny = chainY(nx, i + 1)
         ctx.strokeStyle = signing ? `rgba(176, 140, 255, ${(0.55 + lit * 0.3).toFixed(3)})` : `rgba(255, 255, 255, ${(0.08 + lit * 0.4).toFixed(3)})`; ctx.lineWidth = 1
         ctx.beginPath(); ctx.moveTo(x + 76, yy); ctx.lineTo(nx - 4, ny); ctx.stroke()
@@ -193,6 +211,7 @@ export function hashField() {
     for (const e of embers) {
       const k = (now - e.t0) / e.life
       e.x += e.vx * dt; e.y += e.vy * dt; e.vy -= 6 * dt
+      if (covered(e.x, e.y)) continue
       ctx.fillStyle = e.m ? `rgba(220, 31, 255, ${((1 - k) * 0.85).toFixed(3)})` : `rgba(176, 140, 255, ${((1 - k) * 0.7).toFixed(3)})`
       ctx.fillRect(e.x, e.y, 2, 2)
     }
