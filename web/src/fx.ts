@@ -97,108 +97,106 @@ export function countUp(root: ParentNode = document) {
   els.forEach((el) => io.observe(el))
 }
 
-/** The chain behind the page: cubes turning slowly in drifting chains, blocks travelling along the links, a ripple
-    when a new one lands; barely there, and lit, faster and cross-linked where the pointer is. */
-export function chainField() {
-  if (wired.has('chain')) return
-  wired.add('chain')
+/** The hash behind the page. A field of hex digits, barely there, that drifts as you scroll and resolves where the
+    pointer is; across it, the chain of one-time keys: each key signs, runs through SHA-256, burns to embers, and the
+    next one derives. Scrolling drives the chain: every few hundred pixels another key burns. */
+export function hashField() {
+  if (wired.has('hash')) return
+  wired.add('hash')
   const canvas = document.createElement('canvas'); canvas.className = 'chainfield'; canvas.setAttribute('aria-hidden', 'true')
   document.body.appendChild(canvas)
   const ctx = canvas.getContext('2d'); if (!ctx) return
-  type N = { x: number; y: number; bx: number; by: number; ph: number; sp: number; amp: number; a: number; av: number; tilt: number }
-  type C = { nodes: N[]; travellers: number[]; speed: number }
-  type Rip = { x: number; y: number; t0: number }
-  let W = 0, H = 0, dpr = 1, chains: C[] = [], rips: Rip[] = [], raf = 0, on = true, last = 0, nextRip = 0
-  let mx = -9999, my = -9999
-  const R = 280
+  const HEX = '0123456789abcdef'
+  const rnd = (n: number) => Math.floor(Math.random() * n)
+  const hex = (n: number) => Array.from({ length: n }, () => HEX[rnd(16)]).join('')
+  type Cell = { c: string; t: number }
+  type Key = { n: number; h: string; sig: string; burnt: number; born: number }
+  type Ember = { x: number; y: number; vx: number; vy: number; t0: number; life: number; m: boolean }
+  const CW = 28, CH = 32, KEYS = 9, STEP = 360
+  let W = 0, H = 0, cols = 0, rows = 0, cells: Cell[] = [], keys: Key[] = [], embers: Ember[] = [], raf = 0, on = true, last = 0
+  let mx = -9999, my = -9999, nextKey = 1, burned = 0, idle = 0, lastY = scrollY, vel = 0
+  const R = 240
   const build = () => {
-    const r = canvas.getBoundingClientRect(); dpr = Math.min(devicePixelRatio || 1, 1.5)
+    const r = canvas.getBoundingClientRect(); const dpr = Math.min(devicePixelRatio || 1, 1.25)
     W = r.width; H = r.height; canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    const count = Math.max(5, Math.round(H / 150)), per = Math.max(8, Math.round(W / 100))
-    chains = Array.from({ length: count }, (_, i) => {
-      const y0 = ((i + 0.5) / count) * H + (Math.random() - 0.5) * 60, wave = 30 + Math.random() * 70, k = 0.6 + Math.random() * 1.2, off = Math.random() * Math.PI * 2
-      const nodes: N[] = Array.from({ length: per }, (__, j) => {
-        const t = (j + Math.random() * 0.4) / (per - 1)
-        const bx = -40 + t * (W + 80), by = y0 + Math.sin(t * Math.PI * 2 * k + off) * wave
-        return { x: bx, y: by, bx, by, ph: Math.random() * Math.PI * 2, sp: 0.15 + Math.random() * 0.25, amp: 4 + Math.random() * 8, a: Math.random() * Math.PI * 2, av: (0.15 + Math.random() * 0.25) * (Math.random() < 0.5 ? -1 : 1), tilt: 0.4 + Math.random() * 0.35 }
-      })
-      return { nodes, travellers: [Math.random(), Math.random()], speed: 0.02 + Math.random() * 0.025 }
-    })
+    cols = Math.ceil(W / CW) + 2; rows = Math.ceil(H / CH) + 2
+    cells = Array.from({ length: cols * rows }, () => ({ c: HEX[rnd(16)], t: Math.random() * 10 }))
+    if (!keys.length) { keys = Array.from({ length: KEYS }, () => ({ n: nextKey++, h: hex(8), sig: hex(6), burnt: 0, born: 0 })) }
   }
-  /** A wireframe cube of half-size h at (x, y), turned by a around its axis and tilted; lit blends it toward purple. */
-  const cube = (x: number, y: number, h: number, a: number, tilt: number, lit: number) => {
-    const ca = Math.cos(a), sa = Math.sin(a), ct = Math.cos(tilt), st = Math.sin(tilt)
-    const P: [number, number, number][] = []
-    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
-      const X = sx * h, Y = sy * h, Z = sz * h
-      const x1 = X * ca - Z * sa, z1 = X * sa + Z * ca          // turn around the vertical axis
-      const y2 = Y * ct - z1 * st, z2 = Y * st + z1 * ct         // then tip toward the viewer
-      P.push([x + x1, y + y2, z2])
-    }
-    const E = [[0,1],[0,2],[1,3],[2,3],[4,5],[4,6],[5,7],[6,7],[0,4],[1,5],[2,6],[3,7]]
-    for (const [i, j] of E) {
-      const front = (P[i][2] + P[j][2]) / 2 > 0
-      const al = (front ? 0.16 : 0.07) + lit * (front ? 0.8 : 0.45)
-      ctx.strokeStyle = lit > 0.01 ? `rgba(${Math.round(255 - 95 * lit)}, ${Math.round(255 - 170 * lit)}, 255, ${al.toFixed(3)})` : `rgba(255, 255, 255, ${al.toFixed(3)})`
-      ctx.lineWidth = front ? 1 + lit * 0.6 : 0.8
-      ctx.beginPath(); ctx.moveTo(P[i][0], P[i][1]); ctx.lineTo(P[j][0], P[j][1]); ctx.stroke()
-    }
-    if (lit > 0.05) { ctx.fillStyle = `rgba(153, 69, 255, ${(lit * 0.22).toFixed(3)})`; ctx.beginPath(); ctx.arc(x, y, h * 1.1, 0, Math.PI * 2); ctx.fill() }
+  const chainY = (x: number, i: number) => H * 0.64 + Math.sin(x / 520 + i * 0.3) * 36
+  const burn = (k: Key, x: number, y: number, now: number) => {
+    k.burnt = now
+    for (let i = 0; i < 26; i++) embers.push({ x: x + (Math.random() - 0.5) * 60, y: y + (Math.random() - 0.5) * 14, vx: (Math.random() - 0.5) * 18, vy: -14 - Math.random() * 30, t0: now, life: 1400 + Math.random() * 1200, m: Math.random() < 0.4 })
   }
   const frame = (now: number) => {
     if (!on) return
-    const t = now / 1000, dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016; last = now
+    const dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016; last = now
+    const y = scrollY; vel = vel * 0.9 + (y - lastY) * 0.1; lastY = y
+    idle += dt * 18                                            // the chain creeps on its own; the scroll pushes it
+    const drive = y + idle
     ctx.clearRect(0, 0, W, H)
-    for (const c of chains) {
-      for (const n of c.nodes) {
-        n.x = n.bx + Math.sin(t * n.sp + n.ph) * n.amp; n.y = n.by + Math.cos(t * n.sp * 0.8 + n.ph) * n.amp * 0.6
-        const f = Math.max(0, 1 - Math.hypot(n.x - mx, n.y - my) / R)
-        n.a += n.av * dt * (1 + f * f * 7)                                   // the cubes turn, and spin up under the pointer
-      }
-      for (let i = 0; i < c.nodes.length - 1; i++) {
-        const a = c.nodes[i], b = c.nodes[i + 1]
-        const d = Math.hypot((a.x + b.x) / 2 - mx, (a.y + b.y) / 2 - my), f = Math.max(0, 1 - d / R), lit = f * f
-        ctx.strokeStyle = lit > 0.01 ? `rgba(${Math.round(255 - 102 * lit)}, ${Math.round(255 - 186 * lit)}, 255, ${(0.05 + 0.75 * lit).toFixed(3)})` : 'rgba(255, 255, 255, 0.05)'
-        ctx.lineWidth = 1 + lit
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke()
-      }
-      // blocks travelling down the chain; when one reaches the end, a ripple
-      c.travellers = c.travellers.map((p) => {
-        const q = p + c.speed * dt * (1 + (() => { const i = Math.floor(p * (c.nodes.length - 1)); const n = c.nodes[Math.min(i, c.nodes.length - 1)]; const f = Math.max(0, 1 - Math.hypot(n.x - mx, n.y - my) / R); return f * f * 3 })())
-        if (q >= 1) { const e = c.nodes[c.nodes.length - 1]; rips.push({ x: e.x, y: e.y, t0: now }); return 0 }
-        return q
-      })
-      for (const p of c.travellers) {
-        const s = p * (c.nodes.length - 1), i = Math.floor(s), a = c.nodes[i], b = c.nodes[Math.min(i + 1, c.nodes.length - 1)], q = s - i
-        const px = a.x + (b.x - a.x) * q, py = a.y + (b.y - a.y) * q
-        const f = Math.max(0, 1 - Math.hypot(px - mx, py - my) / R)
-        cube(px, py, 2.2 + f * 1.2, t * 2.2 + p * 9, 0.6, 0.35 + f * 0.65)
-      }
-      for (const n of c.nodes) {
-        const f = Math.max(0, 1 - Math.hypot(n.x - mx, n.y - my) / R), lit = f * f
-        cube(n.x, n.y, 3.6 + lit * 2.4, n.a, n.tilt, lit)
-      }
+
+    // 1. the field of digits: drifts up with the scroll, flips now and then, resolves near the pointer and in a band where you just scrolled
+    const oy = (y * 0.35) % CH, ox = (y * 0.08) % CW
+    ctx.font = '500 12px "Inter Variable", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    const band = Math.min(1, Math.abs(vel) / 40)
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const cell = cells[r * cols + c]
+      cell.t -= dt * (1 + band * 6)
+      if (cell.t <= 0) { cell.c = HEX[rnd(16)]; cell.t = 2 + Math.random() * 12 }
+      const px = c * CW - ox + CW / 2, py = r * CH - oy + CH / 2
+      const d = Math.hypot(px - mx, py - my), f = d < R ? 1 - d / R : 0, lit = f * f
+      const scan = band * Math.max(0, 1 - Math.abs(py - H * 0.5) / (H * 0.5)) * 0.25
+      const al = 0.038 + lit * 0.6 + scan
+      if (al < 0.02) continue
+      ctx.fillStyle = lit > 0.02 ? `rgba(${Math.round(220 - 60 * lit)}, ${Math.round(220 - 130 * lit)}, 255, ${al.toFixed(3)})` : `rgba(255, 255, 255, ${al.toFixed(3)})`
+      ctx.fillText(cell.c, px, py)
     }
-    // the ripples: a ring that opens and fades
-    if (now > nextRip) { const c = chains[Math.floor(Math.random() * chains.length)]; if (c) { const n = c.nodes[Math.floor(Math.random() * c.nodes.length)]; rips.push({ x: n.x, y: n.y, t0: now }) } nextRip = now + 1800 + Math.random() * 2600 }
-    rips = rips.filter((r) => now - r.t0 < 1400)
-    for (const r of rips) {
-      const k = (now - r.t0) / 1400, f = Math.max(0, 1 - Math.hypot(r.x - mx, r.y - my) / R)
-      ctx.strokeStyle = `rgba(176, 140, 255, ${((1 - k) * (0.22 + f * 0.5)).toFixed(3)})`; ctx.lineWidth = 1
-      ctx.beginPath(); ctx.arc(r.x, r.y, 6 + k * 46, 0, Math.PI * 2); ctx.stroke()
-    }
-    // where the pointer is, the chains find each other
-    if (mx > -999) {
-      const near: N[] = []
-      for (const c of chains) for (const n of c.nodes) if (Math.hypot(n.x - mx, n.y - my) < R) near.push(n)
-      for (let i = 0; i < near.length; i++) for (let j = i + 1; j < near.length; j++) {
-        const a = near[i], b = near[j], d = Math.hypot(a.x - b.x, a.y - b.y)
-        if (d > 150 || d < 20) continue
-        const f = (1 - d / 150) * Math.max(0, 1 - Math.hypot((a.x + b.x) / 2 - mx, (a.y + b.y) / 2 - my) / R)
-        ctx.strokeStyle = `rgba(176, 140, 255, ${(f * 0.5).toFixed(3)})`; ctx.lineWidth = 1
-        ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([])
+
+    // 2. the chain of keys, sliding with the scroll: each STEP of scroll burns one more key and derives the next
+    const want = Math.floor(drive / STEP)
+    while (burned < want) { const k = keys[0]; if (!k) break; const x = W * 0.5 - (drive % STEP) * 0.5; burn(k, x, chainY(x, 0), now); keys.shift(); keys.push({ n: nextKey++, h: hex(8), sig: '', burnt: 0, born: now }); burned++ }
+    const gap = 178, x0 = W * 0.5 - ((drive % STEP) / STEP) * gap
+    ctx.textAlign = 'left'
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i], x = x0 + i * gap, yy = chainY(x, i)
+      if (x < -200 || x > W + 60) continue
+      const d = Math.hypot(x + 36 - mx, yy - my), f = d < R ? 1 - d / R : 0, lit = f * f
+      const signing = i === 0, next = i === 1, fresh = k.born ? Math.max(0, 1 - (now - k.born) / 900) : 0
+      const base = signing ? 0.75 : next ? 0.42 : 0.22 - i * 0.015
+      const al = Math.min(1, base + lit * 0.6)
+      // the link to the next key: a line with the hash written on it
+      if (i < keys.length - 1) {
+        const nx = x0 + (i + 1) * gap, ny = chainY(nx, i + 1)
+        ctx.strokeStyle = signing ? `rgba(176, 140, 255, ${(0.55 + lit * 0.3).toFixed(3)})` : `rgba(255, 255, 255, ${(0.08 + lit * 0.4).toFixed(3)})`; ctx.lineWidth = 1
+        ctx.beginPath(); ctx.moveTo(x + 76, yy); ctx.lineTo(nx - 4, ny); ctx.stroke()
+        ctx.font = '500 9px "Inter Variable", sans-serif'; ctx.textAlign = 'center'
+        ctx.fillStyle = signing ? `rgba(176, 140, 255, ${(0.8).toFixed(3)})` : `rgba(255, 255, 255, ${(0.14 + lit * 0.5).toFixed(3)})`
+        ctx.fillText('SHA-256', (x + 76 + nx - 4) / 2, (yy + ny) / 2 - 7)
+        ctx.textAlign = 'left'
       }
+      // the key itself: a small card with its number and its hex
+      const w = 76, h = 26, rx = x, ry = yy - h / 2
+      ctx.fillStyle = signing ? `rgba(153, 69, 255, ${(0.16 + lit * 0.2).toFixed(3)})` : `rgba(255, 255, 255, ${(0.02 + lit * 0.06).toFixed(3)})`
+      ctx.strokeStyle = signing ? `rgba(176, 140, 255, ${al.toFixed(3)})` : `rgba(255, 255, 255, ${(al * 0.6).toFixed(3)})`; ctx.lineWidth = 1
+      ctx.beginPath(); ctx.roundRect(rx, ry, w, h, 5); ctx.fill(); ctx.stroke()
+      if (signing) { ctx.shadowColor = 'rgba(153, 69, 255, 0.9)'; ctx.shadowBlur = 18 + Math.sin(now / 160) * 6; ctx.stroke(); ctx.shadowBlur = 0 }
+      ctx.font = '600 9px "Inter Variable", sans-serif'; ctx.fillStyle = signing ? 'rgba(220, 200, 255, 0.95)' : `rgba(255, 255, 255, ${al.toFixed(3)})`
+      ctx.fillText(`#${k.n}`, rx + 7, yy)
+      ctx.font = '500 10px "Inter Variable", sans-serif'; ctx.fillStyle = signing ? 'rgba(255, 255, 255, 0.9)' : `rgba(255, 255, 255, ${(al * 0.85).toFixed(3)})`
+      ctx.fillText(fresh > 0 ? hex(8) : k.h, rx + 28, yy)
+      if (signing) { ctx.font = '500 9px "Inter Variable", sans-serif'; ctx.fillStyle = 'rgba(176, 140, 255, 0.9)'; ctx.fillText('signing · one-time key', rx, ry - 9) }
+      else if (next) { ctx.font = '500 9px "Inter Variable", sans-serif'; ctx.fillStyle = `rgba(255, 255, 255, ${(0.3 + lit * 0.5).toFixed(3)})`; ctx.fillText('next · derived from the words', rx, ry - 9) }
     }
+    // 3. what is left of the burned keys: embers rising and fading, purple and magenta
+    embers = embers.filter((e) => now - e.t0 < e.life)
+    for (const e of embers) {
+      const k = (now - e.t0) / e.life
+      e.x += e.vx * dt; e.y += e.vy * dt; e.vy -= 6 * dt
+      ctx.fillStyle = e.m ? `rgba(220, 31, 255, ${((1 - k) * 0.85).toFixed(3)})` : `rgba(176, 140, 255, ${((1 - k) * 0.7).toFixed(3)})`
+      ctx.fillRect(e.x, e.y, 2, 2)
+    }
+    if (embers.length === 0 && burned === 0 && now % 4000 < 20) { /* nothing to do: the first burn comes with the scroll */ }
     raf = requestAnimationFrame(frame)
   }
   build(); frame(performance.now())
@@ -211,7 +209,7 @@ export function chainField() {
 
 /** Everything, once the page is there. New content (the wizard re-renders) is covered by the CSS selectors alone. */
 export function all() {
-  spotlight(); buttons(); sections(); chainField()
+  spotlight(); buttons(); sections(); hashField()
   const h1 = document.querySelector<HTMLElement>('.z-hero h1')
   if (h1) { const go = () => { if (document.documentElement.classList.contains('intro-wait')) setTimeout(go, 150); else words(h1) }; go() }
   const metrics = document.getElementById('home-metrics')
