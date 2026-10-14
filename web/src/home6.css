@@ -76,8 +76,8 @@
 .n6-more i { font-style: normal; transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .n6-more:hover i { transform: translateX(3px); }
 .n6-visual { margin-top: clamp(40px, 7vh, 80px); }
-.n6-two { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 0.95fr); gap: 14px; align-items: stretch; }
-.n6-two .n6-shot { display: flex; } .n6-two .n6-shot img { object-fit: cover; object-position: left top; height: 100%; }
+.n6-two { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 0.95fr); gap: 14px; align-items: start; }
+.n6-two .n6-shot img { object-fit: unset; height: auto; }
 .n6-shot { margin: 0; padding: 8px; border-radius: 12px; background: #121316; border: 1px solid rgba(255, 255, 255, 0.07); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 30px 80px -40px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
 .n6-shot img { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); }
 .n6-feats { margin-top: clamp(40px, 6vh, 64px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: clamp(32px, 6vw, 120px); }

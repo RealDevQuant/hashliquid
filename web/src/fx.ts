@@ -97,9 +97,31 @@ export function countUp(root: ParentNode = document) {
   els.forEach((el) => io.observe(el))
 }
 
+/** A trail of purple light that follows the pointer across the dark, three blobs with growing lag; it stays off the terminal. */
+export function trail() {
+  if (still || wired.has('trail') || matchMedia('(pointer: coarse)').matches) return
+  wired.add('trail')
+  const host = document.createElement('div'); host.className = 'trail'; host.setAttribute('aria-hidden', 'true')
+  const blobs = [520, 340, 200].map((s, i) => { const b = document.createElement('i'); b.style.width = b.style.height = `${s}px`; b.style.opacity = String(0.28 + i * 0.12); host.appendChild(b); return { el: b, x: innerWidth / 2, y: innerHeight / 2, k: 0.08 + i * 0.07 } })
+  document.body.appendChild(host)
+  let tx = innerWidth / 2, ty = innerHeight / 2, on = false, raf = 0
+  const tick = () => {
+    for (const b of blobs) { b.x += (tx - b.x) * b.k; b.y += (ty - b.y) * b.k; b.el.style.transform = `translate(${b.x.toFixed(1)}px, ${b.y.toFixed(1)}px) translate(-50%, -50%)` }
+    raf = requestAnimationFrame(tick)
+  }
+  addEventListener('pointermove', (e) => {
+    tx = e.clientX; ty = e.clientY
+    const overApp = !!(e.target as Element | null)?.closest?.('.term, .drawer, .gate, .nav')
+    host.classList.toggle('on', !overApp)
+    if (!on) { on = true; tick() }
+  }, { passive: true })
+  document.addEventListener('pointerleave', () => host.classList.remove('on'))
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(raf); on = false } })
+}
+
 /** Everything, once the page is there. New content (the wizard re-renders) is covered by the CSS selectors alone. */
 export function all() {
-  spotlight(); buttons(); sections()
+  spotlight(); buttons(); sections(); trail()
   const h1 = document.querySelector<HTMLElement>('.z-hero h1')
   if (h1) { const go = () => { if (document.documentElement.classList.contains('intro-wait')) setTimeout(go, 150); else words(h1) }; go() }
   const metrics = document.getElementById('home-metrics')
