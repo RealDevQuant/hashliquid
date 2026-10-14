@@ -42,7 +42,7 @@ export function indicator(nav: HTMLElement) {
 /** BTC, ETH and SOL, live, refreshed every ten seconds; the colour says which way the last move went. */
 export function ticker(nav: HTMLElement) {
   const box = document.createElement('div'); box.className = 'nav-tick'; box.setAttribute('aria-label', 'Live prices')
-  box.innerHTML = `<span class="nav-live"><i></i>Live</span>` + MARKETS.map((m) => `<a href="/app.html" data-m="${m}"><b>${m}</b><span>…</span></a>`).join('')
+  box.innerHTML = MARKETS.map((m) => `<a href="/app.html" data-m="${m}"><b>${m}</b><span>…</span></a>`).join('')
   const btn = nav.querySelector('.nav-in > .btn'); if (btn) btn.before(box); else nav.querySelector('.nav-in')?.appendChild(box)
   const last: Record<string, number> = {}
   const fmt = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: v >= 1000 ? 1 : 2, maximumFractionDigits: v >= 1000 ? 1 : 2 })
