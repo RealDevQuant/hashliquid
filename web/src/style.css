@@ -1072,7 +1072,7 @@ a { color: var(--text); }
 .btn.lean, #app button.lean { transform: none !important; }
 
 /* the nav: fixed, a hairline under it, blur behind it; links on the right, a white pill at the end */
-.nav, .nav.is-pill, .nav.is-float { position: fixed; top: 0; left: 0; right: 0; z-index: 30; padding: 0; background: rgba(8, 9, 10, 0.6); border-bottom: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.nav, .nav.is-pill, .nav.is-float { position: sticky; top: 0; left: 0; right: 0; z-index: 30; padding: 0; background: rgba(8, 9, 10, 0.6); border-bottom: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
 .nav .nav-in, .nav.is-pill .nav-in, .nav.is-pill.is-float .nav-in { width: min(1280px, calc(100% - 64px)); margin: 0 auto; min-height: 64px; padding: 0; gap: 0; border: 0; border-radius: 0; background: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
 .nav .brand, .nav.is-pill .brand { font-size: 17px; font-weight: 510; letter-spacing: -0.02em; gap: 8px; padding: 0; border: 0; text-transform: none; }
 .nav .brand img { width: 22px; height: 22px; }
@@ -1115,3 +1115,39 @@ a { color: var(--text); }
 .intro-line em { font-family: var(--font); font-style: normal; }
 .l-hero::before, .z-hero::before, .lf::before { content: none; }
 .lf, .l-hero { background: var(--bg); }
+
+/* the app and the wizard in the same greys: flat cards, a light border when chosen, no glow */
+#app .dp-opt, #app .dp-tab, #app .dp-agent, .dp-card, .dp-step, .dp-summary, .acct-card, .hire-row, .ag-card, .gate-card, .drawer, .l-card, .ag-open { background: var(--surface) !important; border: 1px solid var(--line) !important; border-radius: var(--radius) !important; box-shadow: none !important; background-image: none !important; }
+#app .dp-opt.on, #app .dp-tab.on, #app .dp-agent.on { border-color: var(--text-2) !important; background: var(--surface-2) !important; color: var(--text); }
+#app .dp-opt::before, #app .dp-opt::after, #app .dp-tab::before, #app .dp-tab::after, .dp-card::before, .dp-step::before, .hire-row::before, .hire-row::after { display: none !important; }
+#app .dp-opt:hover:not(:disabled), #app .dp-tab:hover:not(:disabled) { background: var(--surface-2) !important; border-color: var(--line-strong) !important; }
+#app .dp-opt b, #app .dp-tab b, .dp-card h2, .dp-step h2, .dp-h { font-weight: 510; letter-spacing: -0.01em; text-transform: none; }
+.dp-bar li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); box-shadow: none; }
+.dp-bar li.on, .dp-bar li.done { border-color: var(--line-strong); }
+#app .side button, #app .t-market, #app .t-chart-bar .iv, #app .t-bottom .tab, #app .t-type button, #app .chip, #app .t-lev-chips .chip { border-radius: var(--radius-sm); box-shadow: none; }
+#app .t-market.on { background: var(--surface-2); border-color: var(--line-strong); }
+#app .chip.on, #app .t-lev-chips .chip.on { border-color: var(--text-2); background: var(--surface-2); color: var(--text); }
+.t-order input, .drawer input, .gate-more input, .dp-step input, textarea { background: var(--bg); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); box-shadow: none; }
+.t-order input:focus, .drawer input:focus, .gate-more input:focus, .dp-step input:focus, textarea:focus { border-color: var(--text-2); box-shadow: none; }
+.t-order h2, .t-side-head h2, .t-markets h2, .drawer section h2, .t-acct dt, .t-preview dt, .t-order dt, .drawer dt, .t-stat span, .t-order label, .drawer label, .dp-step label, .book-head, .t-bottom th, .ag-nums dt { font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); font-weight: 400; }
+#app button.wide, #app .wide { border-radius: var(--radius-sm); }
+.ag-card { border-top: 1px solid var(--line) !important; }
+.ag-hero h1 em, .dp-head h1 em, h1 em { color: var(--text-2); }
+.avatar { border-width: 1px; }
+/* cards that happen to be buttons keep their size; inputs stay in the sans; wizard labels in the sans */
+#app .dp-opt, #app .dp-tab, #app .dp-agent, #app .t-market, #app .hire-row, #app .acct-card { height: auto; padding: 16px 18px; white-space: normal; text-align: left; line-height: 1.45; display: block; font-size: 14px; font-weight: 400; color: var(--text-2); }
+#app .t-market { display: grid; padding: 9px 10px; }
+#app .dp-tab b, #app .dp-opt b { display: block; font-size: 16px; font-weight: 510; color: var(--text); margin-bottom: 4px; }
+#app .dp-opt small, #app .dp-tab small { display: block; font-size: 14px; color: var(--muted); }
+input, textarea, select { font-family: var(--font); font-size: 15px; letter-spacing: -0.005em; text-transform: none; }
+.dp-step label, .dp-step .lbl, .dp-h small { font-family: var(--font); font-size: 14px; letter-spacing: -0.005em; text-transform: none; color: var(--muted); }
+.t-order label, .drawer label, .gate-more label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+.t-order label input, .drawer label input, .gate-more label input { font-family: var(--font); font-size: 15px; letter-spacing: -0.005em; text-transform: none; }
+#app .side button { height: 44px; padding: 0; }
+#app .chip, #app .t-lev-chips .chip, #app .t-chart-bar .iv, #app .t-bottom .tab, #app .t-type button { height: auto; padding: 5px 10px; font-size: 12.5px; }
+#app .t-bottom .tab, #app .t-type button { border-radius: 0; }
+
+/* the side buttons rest quiet until one is chosen; the brand reads as a word */
+#app .side button.long:not(.on), #app .side button.short:not(.on) { background: transparent; color: var(--muted); border: 1px solid var(--line-strong); }
+.brand b { text-transform: none; letter-spacing: -0.02em; font-weight: 510; }
+.brand b span { color: var(--text); }

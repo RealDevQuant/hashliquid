@@ -56,6 +56,15 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
 
 // the home's motion and the floating nav
 {
+  const figs = Array.from(document.querySelectorAll<HTMLElement>('.n6-art[data-fig]'))
+  if (figs.length) void import('./iso.ts').then((m) => {
+    for (const f of figs) m.mount(f, f.dataset.fig ?? 'keys')
+    const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { e.target.classList.add('drawn'); io.unobserve(e.target) } }, { threshold: 0.3 })
+    figs.forEach((f) => io.observe(f))
+    // the chain of keys: one cube lit after another
+    const keys = figs.find((f) => f.dataset.fig === 'keys')
+    if (keys && !matchMedia('(prefers-reduced-motion: reduce)').matches) { let lit = 0; setInterval(() => { if (document.hidden) return; const cubes = keys.querySelectorAll<SVGGElement>('.cube.k'); lit = (lit + 1) % 6; cubes.forEach((c, i) => c.classList.toggle('now', i === lit)) }, 1600) }
+  })
   const frame = document.querySelector<HTMLElement>('.n6-frame')
   if (frame && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const place = () => { const r = frame.getBoundingClientRect(); frame.classList.toggle('flat', r.top < innerHeight * 0.45) }

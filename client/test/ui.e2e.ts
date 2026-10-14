@@ -29,7 +29,7 @@ const fontsInUse = () => {
   return [...seen]
 }
 // the two typefaces of the site: the sans everywhere, the serif only for the one italic word
-const FONTS = ['Instrument Sans Variable', 'Instrument Serif']
+const FONTS = ['Inter Variable', 'Geist Mono Variable']
 const fontsOk = (fonts: string[], why: string) => assert.ok(fonts.includes(FONTS[0]) && fonts.every((f) => FONTS.includes(f)), `${why}: ${fonts.join(', ')}`)
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 const PUPPETEER = process.env.PUPPETEER || 'puppeteer-core'   // a path to a puppeteer-core install, when it is not in node_modules
@@ -174,7 +174,7 @@ test('the landing page: one typeface, nothing overflowing, and it leads to the a
     page.on('console', (m: { type(): string; text(): string }) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`) })
     await page.goto(`${BASE}/?intro=0`, { waitUntil: 'networkidle0' })
     await page.evaluate(() => document.fonts.ready)
-    assert.equal(await page.$eval('h1', (e: Element) => e.textContent?.trim()), 'Trade perps in bunker mode.')
+    assert.equal(await page.$eval('h1', (e: Element) => e.textContent?.trim()), 'Trade perps from a wallet no private key can move')
     assert.match(await page.$eval('.l-meet-h', (e: Element) => e.textContent?.trim() ?? ''), /^Three traders\. Three bunkers\./)
     fontsOk(await page.evaluate(fontsInUse), 'the two typefaces, nothing else, on the whole page')
     // the logo is in the header and in the footer, and the site has its icons
@@ -198,7 +198,7 @@ test('the landing page: one typeface, nothing overflowing, and it leads to the a
     assert.ok(!/velocity/i.test(text), 'the exchange is not named')
     if (SHOTS) await page.screenshot({ path: `${SHOTS}/landing-desktop.png`, fullPage: true })
     // the wide sections fill the page: their frame spans the viewport minus the gutters, not a fixed 1120px
-    const wide = await page.$eval('.z-wrap', (e: Element) => e.getBoundingClientRect().width)
+    const wide = await page.$eval('.n6-wrap', (e: Element) => e.getBoundingClientRect().width)
     assert.ok(wide > 1100, `the content column spans ${wide}px of 1440`)
 
     // the docs page: same font, every section linked from its table of contents, the exchange not named
@@ -225,7 +225,7 @@ test('the landing page: one typeface, nothing overflowing, and it leads to the a
     // the call to action opens the app
     await page.setViewport({ width: 1280, height: 900 })
     await page.goto(`${BASE}/?intro=0`, { waitUntil: 'networkidle0' })
-    await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.click('.l-hero .z-cta .btn:not(.ghost)')])
+    await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.click('.l-hero .n6-cta .btn:not(.ghost)')])
     assert.ok(page.url().endsWith('/app.html'))
     await page.waitForSelector('.gate', { timeout: 30_000 })
     assert.deepEqual(errors, [])

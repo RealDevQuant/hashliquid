@@ -1255,7 +1255,7 @@ function render() {
   const m = current()
   app.innerHTML = `
     <header class="nav"><div class="nav-in">
-      <a class="brand" href="/" aria-label="HashLiquid home"><img src="/logo.png" width="34" height="34" alt="" /><b>HASH<span>LIQUID</span></b></a>
+      <a class="brand" href="/" aria-label="HashLiquid home"><img src="/logo.png" width="34" height="34" alt="" /><b>HashLiquid</b></a>
       ${DEPLOY ? '<span class="nav-note">Deploy an agent</span>' : ui.wallet && m ? `<span class="nav-note">${esc(m.name)} <b>${m.price ? price(m.price) : ''}</b></span>` : '<span class="nav-note">Trade perps in bunker mode.</span>'}
       <nav class="nav-links" aria-label="Pages"><a href="/agents.html">Agents</a><a href="/docs.html">Docs</a><a data-link="x" hidden rel="noopener" target="_blank">X</a><a data-link="chart" hidden rel="noopener" target="_blank">Chart</a></nav>
       ${ui.wallet ? `<button class="ghost sm" data-action="account">${short(ui.wallet.publicKey)}</button>` : ''}
