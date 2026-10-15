@@ -67,7 +67,7 @@
         <section id="keys">
           <h2>Keys and signatures</h2>
           <h3>The 24 words</h3>
-          <p>The app generates 24 words in your browser. They are the single secret behind the bunker: every one-time key is derived from them, and nothing can move what is in the bunker without them. The words are kept in the tab's session memory and never leave the page. They are not your wallet's seed phrase and have nothing to do with it.</p>
+          <p>The app generates 24 words in your browser. They are the single secret behind the bunker: every one-time key is derived from them, and nothing can move what is in the bunker without them. They never leave the page. By default the app keeps them in this browser so the bunker opens again on the next visit; untick <em>Keep them in this browser</em> and they live only in the tab. The Account panel can show them, copy them or download them as a file, and <em>Forget</em> wipes them from the browser. Write them down: if they are gone, the bunker is closed for good. They are not your wallet's seed phrase and have nothing to do with it.</p>
           <h3>One key per move</h3>
           <p>Key #0 signs the first move. Its signature names the hash of key #1, which signs the next, and so on. The program accepts only the key it is waiting for, once. The line of keys cannot be forked or rewound, and the app refuses to sign a second message with a key that has already signed.</p>
           <h3>The scheme</h3>
@@ -85,7 +85,7 @@
           </ol>
           <p>Neither transaction needs a signature from your wallet; the wallet only pays the fee. Anyone could relay a move for you, and it would still do exactly, and only, what you signed.</p>
           <h3>Interrupted moves</h3>
-          <p>If a signature was made but never landed, the app sends the same bytes again: a key signs one message, and sending it twice is always safe. If a move was authorized but not executed, the app shows it as pending with two choices: send it, or call it off by authorizing nothing with the next key.</p>
+          <p>If a signature was made but never landed, the app sends the same bytes again: a key signs one message, and sending it twice is always safe. If a move was authorized but not executed, the app shows it as pending with two choices: send it, or call it off by authorizing nothing with the next key. If a signature was made in the page but never sent at all (a wallet popup closed, a connection dropped), <em>Discard it</em> throws the signed bytes away and the same key signs the next move: nothing reached the chain, so nothing was spent.</p>
         </section>
 
         <section id="trading">
