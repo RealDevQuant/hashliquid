@@ -1143,7 +1143,3 @@ h1:hover, h2:hover, .n6-statement p:hover, .n6-fig:hover h3, .n6-steps li:hover 
 .n6-links a, .n6-steps li, .n6-agent, .n6-proof li, .n6-fig { position: relative; isolation: isolate; --mx: 50%; --my: 50%; }
 .n6-links a::before, .n6-steps li::before, .n6-agent::before, .n6-proof li::before, .n6-fig::before { content: ''; position: absolute; inset: -6px -12px; border-radius: 10px; pointer-events: none; z-index: -1; opacity: 0; transition: opacity 0.4s ease; background: radial-gradient(240px circle at var(--mx) var(--my), rgba(153, 69, 255, 0.16), transparent 62%); }
 .n6-links a:hover::before, .n6-steps li:hover::before, .n6-agent:hover::before, .n6-proof li:hover::before, .n6-fig:hover::before { opacity: 1; }
-/* the top bar stays at the top of the page and scrolls away with it (the terminal keeps its own bar) */
-body:not(:has(#app)) .nav, body:not(:has(#app)) .nav.is-pill, body:not(:has(#app)) .nav.is-float { position: absolute; top: 0; left: 0; right: 0; }
-body:not(:has(#app)) .nav + * { padding-top: 78px; }
-body:not(:has(#app)) .nav.is-pill.is-float .nav-in { background: linear-gradient(180deg, rgba(44, 42, 58, 0.62), rgba(22, 20, 30, 0.66)); border-color: rgba(255, 255, 255, 0.1); }

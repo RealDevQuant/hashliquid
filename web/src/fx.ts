@@ -138,7 +138,7 @@ export function hashField() {
     cells = Array.from({ length: cols * rows }, () => ({ c: HEX[rnd(16)], t: Math.random() * 10 }))
     if (!keys.length) { keys = Array.from({ length: KEYS }, () => ({ n: nextKey++, h: hex(8), sig: hex(6), burnt: 0, born: 0 })) }
   }
-  const chainY = (x: number, i: number) => H * 0.64 + Math.sin(x / 520 + i * 0.3) * 36
+  const chainY = (x: number, i: number) => H * 0.64 - scrollY + Math.sin(x / 520 + i * 0.3) * 36   // anchored to the page, in the hero: it scrolls away with it
   const burn = (k: Key, x: number, y: number, now: number) => {
     k.burnt = now
     for (let i = 0; i < 26; i++) embers.push({ x: x + (Math.random() - 0.5) * 60, y: y + (Math.random() - 0.5) * 14, vx: (Math.random() - 0.5) * 18, vy: -14 - Math.random() * 30, t0: now, life: 1400 + Math.random() * 1200, m: Math.random() < 0.4 })
@@ -177,7 +177,7 @@ export function hashField() {
     ctx.textAlign = 'left'
     for (let i = 0; i < keys.length; i++) {
       const k = keys[i], x = x0 + i * gap, yy = chainY(x, i)
-      if (x < -200 || x > W + 60) continue
+      if (x < -200 || x > W + 60 || yy < -60 || yy > H + 60) continue
       if (covered(x, yy) || covered(x + 76, yy) || covered(x + 38, yy - 16)) continue
       const d = Math.hypot(x + 36 - mx, yy - my), f = d < R ? 1 - d / R : 0, lit = f * f
       const signing = i === 0, next = i === 1, fresh = k.born ? Math.max(0, 1 - (now - k.born) / 900) : 0
